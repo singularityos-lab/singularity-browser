@@ -1,0 +1,41 @@
+{
+   "checksum": "0",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "name": "Singularity",
+            "type": "url",
+            "url": "https://github.com/singularityos-lab"
+         }, {
+            "children": [ {
+               "name": "WebKitGTK",
+               "type": "url",
+               "url": "https://webkitgtk.org/"
+            }, {
+               "name": "Bad",
+               "type": "url",
+               "url": "javascript:alert(1)"
+            } ],
+            "name": "Engines",
+            "type": "folder"
+         } ],
+         "name": "Bookmarks bar",
+         "type": "folder"
+      },
+      "other": {
+         "children": [ {
+            "name": "Local Page",
+            "type": "url",
+            "url": "file:///home/user/page.html"
+         } ],
+         "name": "Other bookmarks",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [ ],
+         "name": "Mobile bookmarks",
+         "type": "folder"
+      }
+   },
+   "version": 1
+}

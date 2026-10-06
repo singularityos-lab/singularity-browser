@@ -1,0 +1,19 @@
+[Adblock Plus 2.0]
+! Title: Browser test list
+||ads.example.com^
+||tracker.example^$third-party
+||cdn.example.net/ads/*$script,image
+/banner/*/ad_$image
+-advert-banner.
+&ad_type=
+@@||ads.example.com/allowed^$document
+##.ad-banner
+##div[id^="sponsor-"]
+##a[href*="/aff/"]
+example.com,news.example##.popup-overlay
+~shop.example##.promo-strip
+||media.example^$~script,~image,third-party
+||x.example^$domain=a.example|b.example
+||y.example^$xmlhttprequest,match-case
+|https://pixel.example/
+swf|

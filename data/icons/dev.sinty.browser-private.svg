@@ -1,0 +1,39 @@
+<svg width="236" height="236" viewBox="0 0 236 236" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="bp_globe" x1="0" y1="18" x2="0" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#9c97f2"/><stop offset="0.5" stop-color="#5f4bd6"/><stop offset="1" stop-color="#33228c"/></linearGradient>
+<linearGradient id="bp_side" x1="0" y1="120" x2="0" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#2a1a78"/><stop offset="1" stop-color="#170c4a"/></linearGradient>
+<linearGradient id="bp_bar" x1="0" y1="138" x2="0" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f1f0fa"/><stop offset="1" stop-color="#dcd9ee"/></linearGradient>
+<linearGradient id="bp_barside" x1="0" y1="160" x2="0" y2="186" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a7a2c8"/><stop offset="1" stop-color="#716b9c"/></linearGradient>
+<linearGradient id="bp_mask" x1="0" y1="148" x2="0" y2="168" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#7a66e8"/><stop offset="1" stop-color="#4a36bf"/></linearGradient>
+<radialGradient id="bp_bloom" cx="76" cy="46" r="132" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="white" stop-opacity="0.4"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
+<clipPath id="bp_clip"><circle cx="118" cy="110" r="92"/></clipPath>
+<filter id="bp_shadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#1a0d4c" flood-opacity="0.45"/></filter>
+<filter id="bp_barshadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#1d1060" flood-opacity="0.4"/></filter>
+</defs>
+<g filter="url(#bp_shadow)">
+<circle cx="118" cy="118" r="92" fill="url(#bp_side)"/>
+<circle cx="118" cy="110" r="92" fill="url(#bp_globe)"/>
+</g>
+<g clip-path="url(#bp_clip)">
+<g stroke="white" stroke-opacity="0.34" stroke-width="6" fill="none">
+<ellipse cx="118" cy="110" rx="40" ry="92"/>
+<path d="M118 18V202M26 110H210"/>
+<path d="M38 66Q118 84 198 66"/>
+<path d="M44 176Q118 190 192 176"/>
+</g>
+<rect width="236" height="236" fill="url(#bp_bloom)"/>
+</g>
+<g fill="white">
+<path d="M170 40Q171.5 48 179 49.5Q171.5 51 170 59Q168.5 51 161 49.5Q168.5 48 170 40Z" fill-opacity="0.9"/>
+<circle cx="150" cy="92" r="3" fill-opacity="0.7"/>
+<circle cx="186" cy="86" r="2.5" fill-opacity="0.6"/>
+</g>
+<circle cx="118" cy="110" r="90" stroke="white" stroke-opacity="0.28" stroke-width="4"/>
+<g filter="url(#bp_barshadow)">
+<rect x="30" y="146" width="176" height="40" rx="20" fill="url(#bp_barside)"/>
+<rect x="30" y="138" width="176" height="40" rx="20" fill="url(#bp_bar)"/>
+</g>
+<rect x="31.5" y="139.5" width="173" height="37" rx="18.5" stroke="white" stroke-width="3"/>
+<path d="M58 152.5C52 148.5 45 148.5 42 151C41.3 157.5 43.2 163.5 48.3 165.6C52 167.1 55.6 165.6 58 162C60.4 165.6 64 167.1 67.7 165.6C72.8 163.5 74.7 157.5 74 151C71 148.5 64 148.5 58 152.5ZM46.5 156.6A3.8 2.6 0 1 0 54.1 156.6A3.8 2.6 0 1 0 46.5 156.6ZM61.9 156.6A3.8 2.6 0 1 0 69.5 156.6A3.8 2.6 0 1 0 61.9 156.6Z" fill="url(#bp_mask)" fill-rule="evenodd"/>
+<rect x="84" y="153" width="92" height="9" rx="4.5" fill="#bdb8d6"/>
+</svg>

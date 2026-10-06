@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="singularity-browser">
+  <schema id="dev.sinty.browser" path="/dev/sinty/browser/">
+    <key name="search-engine" type="s">
+      <default>'duckduckgo'</default>
+      <summary>Search engine</summary>
+      <description>One of duckduckgo, startpage, ecosia, google, bing or custom.</description>
+    </key>
+    <key name="custom-search-url" type="s">
+      <default>''</default>
+      <summary>Custom search address</summary>
+      <description>Search address with %s where the query goes, used when search-engine is custom.</description>
+    </key>
+    <key name="custom-suggest-url" type="s">
+      <default>''</default>
+      <summary>Custom suggestions address</summary>
+      <description>OpenSearch suggestions address with %s where the query goes, used when search-engine is custom.</description>
+    </key>
+    <key name="search-suggestions" type="b">
+      <default>true</default>
+      <summary>Search suggestions</summary>
+      <description>Ask the search engine for suggestions while typing in the address bubble. Never used in private windows.</description>
+    </key>
+    <key name="tabs-layout" type="s">
+      <choices>
+        <choice value="horizontal"/>
+        <choice value="vertical"/>
+      </choices>
+      <default>'horizontal'</default>
+      <summary>Tabs layout</summary>
+    </key>
+    <key name="restore-session" type="b">
+      <default>true</default>
+      <summary>Restore tabs and tiles on start</summary>
+    </key>
+    <key name="show-top-sites" type="b">
+      <default>true</default>
+      <summary>Show top sites on new tabs</summary>
+    </key>
+    <key name="content-blocker" type="b">
+      <default>true</default>
+      <summary>Block ads and trackers</summary>
+    </key>
+    <key name="filter-lists" type="as">
+      <default>['https://easylist.to/easylist/easylist.txt', 'https://easylist.to/easylist/easyprivacy.txt']</default>
+      <summary>Filter lists</summary>
+      <description>Adblock Plus filter lists downloaded and compiled into WebKit content blockers. Distributions can override this key.</description>
+    </key>
+    <key name="filter-update-days" type="i">
+      <range min="1" max="90"/>
+      <default>7</default>
+      <summary>Filter list update interval in days</summary>
+    </key>
+    <key name="block-popups" type="b">
+      <default>true</default>
+      <summary>Block pop-up windows that were not opened by a click</summary>
+    </key>
+    <key name="autoplay" type="s">
+      <choices>
+        <choice value="allow"/>
+        <choice value="allow-without-sound"/>
+        <choice value="block"/>
+      </choices>
+      <default>'allow-without-sound'</default>
+      <summary>Autoplay</summary>
+    </key>
+    <key name="save-passwords" type="b">
+      <default>true</default>
+      <summary>Offer to save passwords</summary>
+    </key>
+    <key name="developer-tools" type="b">
+      <default>false</default>
+      <summary>Show Inspect Element in page menus</summary>
+    </key>
+    <key name="default-zoom" type="d">
+      <range min="0.3" max="3.0"/>
+      <default>1.0</default>
+      <summary>Default zoom</summary>
+    </key>
+    <key name="default-browser-dismissed" type="b">
+      <default>false</default>
+      <summary>The default browser banner was dismissed</summary>
+    </key>
+  </schema>
+</schemalist>

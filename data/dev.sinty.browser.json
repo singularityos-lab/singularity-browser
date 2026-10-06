@@ -1,0 +1,46 @@
+{
+    "schema-id": "dev.sinty.browser",
+    "settings": [
+        {
+            "key": "search-engine",
+            "label": "Search Engine",
+            "type": "string",
+            "widget": "combo",
+            "options": [
+                { "id": "duckduckgo", "label": "DuckDuckGo" },
+                { "id": "startpage", "label": "Startpage" },
+                { "id": "ecosia", "label": "Ecosia" },
+                { "id": "google", "label": "Google" },
+                { "id": "bing", "label": "Bing" }
+            ]
+        },
+        { "key": "search-suggestions", "label": "Search Suggestions", "subtitle": "Ask the search engine while you type; never in private windows", "type": "boolean", "widget": "toggle" },
+        {
+            "key": "tabs-layout",
+            "label": "Tabs",
+            "type": "string",
+            "widget": "combo",
+            "options": [
+                { "id": "horizontal", "label": "Above Pages" },
+                { "id": "vertical", "label": "In the Sidebar" }
+            ]
+        },
+        { "key": "restore-session", "label": "Reopen Tabs and Tiles", "subtitle": "Continue where you left off when Browser starts", "type": "boolean", "widget": "toggle" },
+        { "key": "show-top-sites", "label": "Top Sites on New Tabs", "type": "boolean", "widget": "toggle" },
+        { "key": "content-blocker", "label": "Block Ads and Trackers", "subtitle": "Uses EasyList and EasyPrivacy; turn it off per site from the address bubble", "type": "boolean", "widget": "toggle" },
+        { "key": "block-popups", "label": "Block Pop-up Windows", "type": "boolean", "widget": "toggle" },
+        {
+            "key": "autoplay",
+            "label": "Autoplay",
+            "type": "string",
+            "widget": "combo",
+            "options": [
+                { "id": "allow", "label": "Allow" },
+                { "id": "allow-without-sound", "label": "Without Sound" },
+                { "id": "block", "label": "Block" }
+            ]
+        },
+        { "key": "save-passwords", "label": "Offer to Save Passwords", "subtitle": "Passwords are kept in your keyring and shown in Passwords", "type": "boolean", "widget": "toggle" },
+        { "key": "developer-tools", "label": "Developer Tools", "subtitle": "Show Inspect Element in page menus", "type": "boolean", "widget": "toggle" }
+    ]
+}

@@ -1,0 +1,305 @@
+.browser-url-bubble {
+    min-height: 28px;
+    padding: 0 3px 0 2px;
+}
+.browser-url-bubble box,
+.browser-url-bubble label,
+.browser-url-bubble image {
+    min-height: 0;
+    min-width: 0;
+}
+.browser-url-bubble .browser-url-entry {
+    background: none;
+    border: none;
+    box-shadow: none;
+    min-height: 22px;
+    padding: 0 6px;
+    color: @hover_btn_fg;
+    font-size: 13px;
+}
+.browser-url-bubble .browser-url-entry > placeholder {
+    color: alpha(@hover_btn_fg, 0.55);
+}
+.browser-url-bubble.editing {
+    border-color: alpha(@accent_color, 0.8);
+    box-shadow: 0 0 0 3px alpha(@accent_color, 0.25);
+}
+.browser-url-bubble button.browser-url-icon,
+.browser-url-bubble button.flat.browser-url-icon {
+    min-width: 22px;
+    min-height: 22px;
+    padding: 0;
+    margin: 0;
+    border-radius: 99px;
+    color: alpha(@hover_btn_fg, 0.75);
+}
+.browser-url-bubble button.browser-url-icon image {
+    -gtk-icon-size: 12px;
+}
+.browser-url-bubble button.browser-url-icon:hover {
+    background-color: alpha(@hover_btn_fg, 0.1);
+    color: @hover_btn_fg;
+}
+.browser-url-bubble button.browser-url-icon.active {
+    color: @accent_color;
+}
+.browser-url-bubble.insecure button.browser-url-icon:first-child {
+    color: @warning_color;
+}
+.browser-url-bubble button.browser-url-zoom {
+    min-height: 20px;
+    padding: 0 7px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    background-color: alpha(@hover_btn_fg, 0.08);
+    color: @hover_btn_fg;
+}
+progressbar.browser-url-progress {
+    margin: 0 12px;
+}
+progressbar.browser-url-progress > trough {
+    min-height: 2px;
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+progressbar.browser-url-progress > trough > progress {
+    min-height: 2px;
+    border-radius: 2px;
+    background-color: @accent_color;
+    border: none;
+}
+.private .browser-url-bubble {
+    background-color: mix(@hover_btn_bg, #6f3cc4, 0.28);
+    border-color: alpha(#8e5bdc, 0.55);
+}
+.browser-root {
+    background-color: @window_bg_color;
+}
+.browser-tiles.tiled {
+    padding: 4px;
+}
+.browser-tiles.tiled .browser-tile {
+    border-radius: 12px;
+    border: 1px solid alpha(@text_color, 0.1);
+    background-color: @view_bg_color;
+}
+.browser-tiles.tiled .browser-tile.focused {
+    border-color: alpha(@accent_color, 0.75);
+    box-shadow: 0 0 0 1px alpha(@accent_color, 0.3);
+}
+.browser-tiles.tiled .browser-tile > :last-child {
+    border-radius: 0 0 11px 11px;
+}
+.browser-tile.dragging {
+    opacity: 0.55;
+}
+.browser-tile-header {
+    min-height: 34px;
+    padding: 0 4px 0 6px;
+    border-bottom: 1px solid alpha(@text_color, 0.07);
+}
+.browser-tile-header .browser-tile-title {
+    font-size: 12px;
+    opacity: 0.75;
+    padding: 0 6px;
+}
+.browser-tile-header button.browser-tile-grip {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    opacity: 0.55;
+    border-radius: 99px;
+}
+.browser-tile-header button.browser-tile-grip:hover {
+    opacity: 1;
+}
+.browser-tile-header .chip.icon-only {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+paned.browser-paned > separator {
+    min-width: 6px;
+    min-height: 6px;
+    background: transparent;
+    background-image: none;
+}
+paned.browser-paned > separator:hover {
+    background-color: alpha(@accent_color, 0.35);
+    border-radius: 3px;
+}
+.browser-prompts {
+    padding: 8px 10px 0 10px;
+}
+.browser-prompts .singularity-banner {
+    margin-bottom: 8px;
+}
+.browser-find-bar {
+    padding: 6px 10px;
+    border-top: 1px solid alpha(@text_color, 0.08);
+    background-color: @window_bg_color;
+}
+.browser-start-page .welcome-page-icon {
+    margin-bottom: 6px;
+}
+entry.browser-start-search {
+    min-height: 44px;
+    border-radius: 99px;
+    padding: 0 18px;
+    font-size: 15px;
+}
+button.browser-top-site {
+    border-radius: 16px;
+    padding: 0;
+    background-color: alpha(@text_color, 0.03);
+    border: 1px solid alpha(@text_color, 0.06);
+}
+button.browser-top-site:hover {
+    background-color: alpha(@text_color, 0.08);
+}
+.browser-top-site-badge {
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 14px;
+    background-color: @card_bg_color;
+    box-shadow: 0 1px 3px alpha(black, 0.12);
+}
+.browser-suggestions-popover > contents {
+    padding: 6px;
+    border-radius: 14px;
+}
+.browser-suggestions row.browser-suggestion {
+    border-radius: 9px;
+}
+.browser-suggestions row.browser-suggestion:selected {
+    background-color: alpha(@accent_color, 0.18);
+    color: inherit;
+}
+.browser-sidebar-tab {
+    padding: 6px 6px 6px 10px;
+    border-radius: 9px;
+    margin: 1px 0;
+}
+.browser-sidebar-tab:hover {
+    background-color: alpha(@text_color, 0.06);
+}
+.browser-sidebar-tab.active {
+    background-color: alpha(@accent_color, 0.16);
+}
+.browser-sidebar-tab button.browser-sidebar-close {
+    min-width: 20px;
+    min-height: 20px;
+    padding: 0;
+    opacity: 0;
+}
+.browser-sidebar-tab:hover button.browser-sidebar-close,
+.browser-sidebar-tab.active button.browser-sidebar-close {
+    opacity: 0.7;
+}
+.browser-pinned-grid {
+    margin: 4px 0 8px 0;
+}
+button.browser-pinned-tab {
+    min-width: 36px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 9px;
+    background-color: alpha(@text_color, 0.05);
+}
+button.browser-pinned-tab.active {
+    background-color: alpha(@accent_color, 0.2);
+}
+.browser-group-dot {
+    min-width: 8px;
+    min-height: 8px;
+    border-radius: 99px;
+    margin-right: 6px;
+}
+button.browser-group-swatch {
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    border-radius: 99px;
+}
+button.browser-group-swatch .browser-group-dot {
+    min-width: 14px;
+    min-height: 14px;
+    margin: 0;
+}
+button.browser-group-swatch:checked {
+    background-color: alpha(@accent_color, 0.25);
+    box-shadow: inset 0 0 0 2px @accent_color;
+}
+.browser-site-popover > contents,
+.browser-downloads-popover > contents,
+.browser-bookmark-popover > contents {
+    padding: 0;
+    border-radius: 16px;
+}
+.browser-webapp-icon {
+    margin-top: 8px;
+}
+.browser-tile-header .chip-bar {
+    background: none;
+    border: none;
+    min-height: 34px;
+}
+.browser-tile-header .chip {
+    background-color: transparent;
+    border: 1px solid transparent;
+}
+.browser-tile-header .chip:hover {
+    background-color: alpha(@text_color, 0.07);
+}
+.browser-tile-header .chip.active {
+    background-color: alpha(@accent_color, 0.16);
+    border-color: alpha(@accent_color, 0.35);
+}
+.browser-tile-header .chip-body {
+    color: alpha(@text_color, 0.72);
+}
+.browser-tile-header .chip.active .chip-body {
+    color: @text_color;
+}
+.browser-tile-header .chip-close {
+    color: alpha(@text_color, 0.45);
+}
+.browser-tile-header .chip-close:hover {
+    color: @text_color;
+    background-color: alpha(@text_color, 0.08);
+}
+.browser-tile-header .chip.private.active {
+    background-color: mix(@card_bg_color, #7c4dcc, 0.14);
+}
+.browser-tile-header .chip.icon-only .chip-body {
+    padding: 2px 4px;
+    min-width: 0;
+}
+.browser-tile-header .chip .chip-close {
+    opacity: 0;
+    transition: opacity 120ms ease;
+}
+.browser-tile-header .chip:hover .chip-close,
+.browser-tile-header .chip.active .chip-close {
+    opacity: 1;
+}
+.browser-tile-header button.browser-tile-add {
+    min-width: 26px;
+    min-height: 26px;
+    padding: 0;
+    margin: 0 2px;
+    border-radius: 99px;
+    opacity: 0.7;
+}
+.browser-tile-header button.browser-tile-add:hover {
+    opacity: 1;
+    background-color: alpha(@text_color, 0.08);
+}
+.browser-tile-header button.browser-tile-add image {
+    -gtk-icon-size: 14px;
+}
+.browser-tab-sidebar separator.browser-group-end {
+    margin: 6px 10px;
+    background-color: alpha(@text_color, 0.08);
+}

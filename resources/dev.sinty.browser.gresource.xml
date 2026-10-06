@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/dev/sinty/browser">
+    <file>browser.css</file>
+    <file>icons/browser-tile-drag-symbolic.svg</file>
+    <file>icons/browser-tabs-symbolic.svg</file>
+    <file>icons/browser-reader-symbolic.svg</file>
+    <file>icons/browser-private-symbolic.svg</file>
+    <file>icons/browser-download-active-symbolic.svg</file>
+    <file alias="icons/dev.sinty.browser.svg">../data/icons/dev.sinty.browser.svg</file>
+    <file alias="icons/dev.sinty.browser-private.svg">../data/icons/dev.sinty.browser-private.svg</file>
+  </gresource>
+</gresources>

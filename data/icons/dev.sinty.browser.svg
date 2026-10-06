@@ -1,0 +1,34 @@
+<svg width="236" height="236" viewBox="0 0 236 236" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="br_globe" x1="0" y1="18" x2="0" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#78e1f1"/><stop offset="0.5" stop-color="#2e9fe6"/><stop offset="1" stop-color="#1f5ccb"/></linearGradient>
+<linearGradient id="br_side" x1="0" y1="120" x2="0" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1a4ca6"/><stop offset="1" stop-color="#112d6c"/></linearGradient>
+<linearGradient id="br_bar" x1="0" y1="138" x2="0" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f0f4f9"/><stop offset="1" stop-color="#dae2ed"/></linearGradient>
+<linearGradient id="br_barside" x1="0" y1="160" x2="0" y2="186" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a0b1c7"/><stop offset="1" stop-color="#6c7f9a"/></linearGradient>
+<radialGradient id="br_bloom" cx="76" cy="46" r="132" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="white" stop-opacity="0.45"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
+<clipPath id="br_clip"><circle cx="118" cy="110" r="92"/></clipPath>
+<filter id="br_shadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#0a1f52" flood-opacity="0.42"/></filter>
+<filter id="br_barshadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0c2a66" flood-opacity="0.38"/></filter>
+</defs>
+<g filter="url(#br_shadow)">
+<circle cx="118" cy="118" r="92" fill="url(#br_side)"/>
+<circle cx="118" cy="110" r="92" fill="url(#br_globe)"/>
+</g>
+<g clip-path="url(#br_clip)">
+<g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none">
+<ellipse cx="118" cy="110" rx="40" ry="92"/>
+<path d="M118 18V202M26 110H210"/>
+<path d="M38 66Q118 84 198 66"/>
+<path d="M44 176Q118 190 192 176"/>
+</g>
+<rect width="236" height="236" fill="url(#br_bloom)"/>
+</g>
+<circle cx="118" cy="110" r="90" stroke="white" stroke-opacity="0.32" stroke-width="4"/>
+<g filter="url(#br_barshadow)">
+<rect x="30" y="146" width="176" height="40" rx="20" fill="url(#br_barside)"/>
+<rect x="30" y="138" width="176" height="40" rx="20" fill="url(#br_bar)"/>
+</g>
+<rect x="31.5" y="139.5" width="173" height="37" rx="18.5" stroke="white" stroke-width="3"/>
+<circle cx="56" cy="157" r="7.5" stroke="#2e9fe6" stroke-width="5"/>
+<path d="M61.5 162.5L67 168" stroke="#2e9fe6" stroke-width="5" stroke-linecap="round"/>
+<rect x="82" y="153" width="94" height="9" rx="4.5" fill="#b3c2d4"/>
+</svg>
