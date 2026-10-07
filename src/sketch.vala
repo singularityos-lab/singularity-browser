@@ -84,11 +84,13 @@ namespace Singularity.Apps.Browser {
         private bool syncing_tools = false;
         private double pending_offset = 0;
         private int queued_height = 0;
+        private string page_uri;
         public signal void closed ();
 
         public PageSketch (Gdk.Texture snapshot, string uri, double scroll_offset) {
             Object (orientation: Orientation.VERTICAL, spacing: 0);
             texture = snapshot;
+            page_uri = uri;
             background = Gdk.pixbuf_get_from_texture (snapshot);
             initial_offset = scroll_offset;
             tooltip_text = null;
@@ -122,6 +124,8 @@ namespace Singularity.Apps.Browser {
             context.add_separator ();
             context.add_button ("edit-copy-symbolic", _("Copy"), _("Copy the Sketch")).activated.connect (copy);
             context.add_button ("document-save-symbolic", _("Save"), _("Save the Sketch as PNG")).activated.connect (() => save.begin ());
+            var to_notes = context.add_button ("document-send-symbolic", _("Send to Notes"), _("Add the Sketch to a Note"));
+            to_notes.activated.connect (() => Singularity.Notes.NotePicker.popup (to_notes.button, (id) => send_to_note (id)));
             context.add_button ("object-select-symbolic", _("Done"), _("Back to the Page")).activated.connect (() => closed ());
             append (ribbon);
 
@@ -332,6 +336,23 @@ namespace Singularity.Apps.Browser {
             if (pixbuf == null) return;
             get_clipboard ().set_texture (Gdk.Texture.for_pixbuf (pixbuf));
             notify_user (_("Sketch copied"));
+        }
+
+        private void send_to_note (string? note_id) {
+            try {
+                var note = Singularity.Notes.NotePicker.target (note_id, _("Page Sketch"));
+                string name = Singularity.Notes.NotePicker.attachment_name ("sketch", "png");
+                string path = Singularity.Notes.NotePicker.attachment_path (note, name);
+                if (flatten ().write_to_png (path) != Cairo.Status.SUCCESS) throw new IOError.FAILED (_("The sketch could not be saved"));
+                FileUtils.chmod (path, 0600);
+                string block = "![%s](%s)\n".printf (_("Sketch"), Singularity.Notes.NotePicker.attachment_link (note, name));
+                if (page_uri != "") block += "<%s>\n".printf (page_uri);
+                Singularity.Notes.NotePicker.append (note, block);
+                var window = get_root () as Singularity.Widgets.Window;
+                if (window != null) window.add_toast (Singularity.Notes.NotePicker.toast (note, note_id == null, _("Sketch")));
+            } catch (Error e) {
+                notify_user (e.message);
+            }
         }
 
         private async void save () {
