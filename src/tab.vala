@@ -670,24 +670,17 @@ namespace Singularity.Apps.Browser {
                     if (stock == WebKit.ContextMenuAction.OPEN_LINK_IN_NEW_WINDOW) menu.remove (item);
                 }
             }
-            if (hit.context_is_selection () && !profile.ephemeral) {
+            if (hit.context_is_selection () && !profile.ephemeral && Singularity.Notes.NotePicker.available ()) {
                 if (quote_action == null) {
                     quote_action = new SimpleAction ("quote-to-note", VariantType.STRING);
                     quote_action.activate.connect ((a, p) => quote_to_note.begin (p.get_string ()));
                 }
                 var notes = new WebKit.ContextMenu ();
                 notes.append (new WebKit.ContextMenuItem.from_gaction (quote_action, _("New Note"), new Variant.string ("")));
-                var store = Singularity.Notes.NoteStore.get_default ();
-                var recent = new Gee.ArrayList<Singularity.Notes.Note> ();
-                foreach (var n in store.all ()) {
-                    if (n.id == Singularity.Notes.NoteStore.QUICK_NOTE_ID || n.id.has_prefix (Singularity.Notes.NoteStore.WIDGET_PREFIX)) continue;
-                    recent.add (n);
-                }
-                recent.sort ((a, b) => a.modified > b.modified ? -1 : (a.modified < b.modified ? 1 : 0));
+                var recent = Singularity.Notes.NotePicker.cached_recent ();
+                Singularity.Notes.NotePicker.refresh_recent ();
                 if (!recent.is_empty) notes.append (new WebKit.ContextMenuItem.separator ());
-                int shown = 0;
                 foreach (var n in recent) {
-                    if (shown++ == 8) break;
                     notes.append (new WebKit.ContextMenuItem.from_gaction (quote_action, n.title != "" ? n.title : _("Untitled Note"), new Variant.string (n.id)));
                 }
                 menu.append (new WebKit.ContextMenuItem.separator ());
@@ -713,9 +706,8 @@ namespace Singularity.Apps.Browser {
             quoted.append ("\n[%s](%s)\n".printf (page_title.replace ("]", ""), uri));
             var window = get_root () as Singularity.Widgets.Window;
             try {
-                var note = Singularity.Notes.NotePicker.target (note_id != "" ? note_id : null, page_title);
-                Singularity.Notes.NotePicker.append (note, quoted.str);
-                if (window != null) window.add_toast (Singularity.Notes.NotePicker.toast (note, note_id == "", _("Quote")));
+                var note = yield Singularity.Notes.NotePicker.add (note_id != "" ? note_id : null, page_title, quoted.str);
+                if (window != null) window.add_toast (Singularity.Notes.NotePicker.toast (note, _("Quote")));
             } catch (Error e) {
                 if (window != null) window.add_toast (new Singularity.Widgets.Toast (e.message));
             }

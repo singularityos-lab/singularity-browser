@@ -126,6 +126,7 @@ namespace Singularity.Apps.Browser {
             context.add_button ("document-save-symbolic", _("Save"), _("Save the Sketch as PNG")).activated.connect (() => save.begin ());
             var to_notes = context.add_button ("document-send-symbolic", _("Send to Notes"), _("Add the Sketch to a Note"));
             to_notes.activated.connect (() => Singularity.Notes.NotePicker.popup (to_notes.button, (id) => send_to_note (id)));
+            to_notes.button.visible = Singularity.Notes.NotePicker.available ();
             context.add_button ("object-select-symbolic", _("Done"), _("Back to the Page")).activated.connect (() => closed ());
             append (ribbon);
 
@@ -339,20 +340,26 @@ namespace Singularity.Apps.Browser {
         }
 
         private void send_to_note (string? note_id) {
+            send_to_note_async.begin (note_id);
+        }
+
+        private async void send_to_note_async (string? note_id) {
+            string name = Singularity.Notes.NotePicker.attachment_name ("sketch", "png");
+            string dir = Path.build_filename (Environment.get_user_cache_dir (), "dev.sinty.browser", "sketches");
+            string path = Path.build_filename (dir, name);
             try {
-                var note = Singularity.Notes.NotePicker.target (note_id, _("Page Sketch"));
-                string name = Singularity.Notes.NotePicker.attachment_name ("sketch", "png");
-                string path = Singularity.Notes.NotePicker.attachment_path (note, name);
+                DirUtils.create_with_parents (dir, 0700);
                 if (flatten ().write_to_png (path) != Cairo.Status.SUCCESS) throw new IOError.FAILED (_("The sketch could not be saved"));
                 FileUtils.chmod (path, 0600);
-                string block = "![%s](%s)\n".printf (_("Sketch"), Singularity.Notes.NotePicker.attachment_link (note, name));
+                string block = "![%s]({link})\n".printf (_("Sketch"));
                 if (page_uri != "") block += "<%s>\n".printf (page_uri);
-                Singularity.Notes.NotePicker.append (note, block);
+                var note = yield Singularity.Notes.NotePicker.add_file (note_id, _("Page Sketch"), File.new_for_path (path), name, block);
                 var window = get_root () as Singularity.Widgets.Window;
-                if (window != null) window.add_toast (Singularity.Notes.NotePicker.toast (note, note_id == null, _("Sketch")));
+                if (window != null) window.add_toast (Singularity.Notes.NotePicker.toast (note, _("Sketch")));
             } catch (Error e) {
                 notify_user (e.message);
             }
+            FileUtils.remove (path);
         }
 
         private async void save () {
