@@ -108,7 +108,8 @@ namespace Singularity.Apps.Browser {
                 } catch (Error e) {
                 }
             }
-            string? profile = chosen != null ? (Path.is_absolute (chosen) ? chosen : Path.build_filename (root, chosen)) : fallback;
+            string? profile = fallback;
+            if (chosen != null) profile = Path.is_absolute (chosen) ? chosen : Path.build_filename (root, chosen);
             if (profile == null) return null;
             string places = Path.build_filename (profile, "places.sqlite");
             return FileUtils.test (places, FileTest.IS_REGULAR) ? places : null;
