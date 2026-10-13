@@ -927,6 +927,7 @@ namespace Singularity.Apps.Browser {
                 { "win.print", "<Control>p" },
                 { "win.sketch", "<Control><Alt>d" },
                 { "win.devtools", "<Control><Shift>i|F12" },
+                { "win.inspect-element", "<Control><Shift>c" },
                 { "win.search-tabs", "<Control><Shift>a" },
                 { "win.new-tile", "<Control><Shift>n" },
                 { "win.split-right", "<Control><Alt>backslash" },

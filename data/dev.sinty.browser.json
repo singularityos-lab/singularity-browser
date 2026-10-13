@@ -41,6 +41,7 @@
             ]
         },
         { "key": "save-passwords", "label": "Offer to Save Passwords", "subtitle": "Passwords are kept in your keyring and shown in Passwords", "type": "boolean", "widget": "toggle" },
-        { "key": "developer-tools", "label": "Developer Tools", "subtitle": "Show Inspect Element in page menus", "type": "boolean", "widget": "toggle" }
+        { "key": "developer-tools", "label": "Developer Tools", "subtitle": "Show Inspect Element in page menus", "type": "boolean", "widget": "toggle" },
+        { "key": "advanced-developer-tools", "label": "Advanced Developer Tools", "subtitle": "Chrome DevTools on the WebKit engine. While on, any local program can inspect your pages. Restart the browser to apply.", "type": "boolean", "widget": "toggle" }
     ]
 }

@@ -58,6 +58,13 @@ namespace Singularity.Apps.Browser {
         private uint reader_probe = 0;
         private PageSketch? sketch;
         private bool capturing_sketch = false;
+        private DevToolsPanel? devtools = null;
+        private Overlay? devtools_overlay = null;
+        private Gdk.Rectangle? page_bounds = null;
+        private Gtk.Window? devtools_window = null;
+        private SimpleAction? inspect_action = null;
+        private double pointer_x = -1;
+        private double pointer_y = -1;
 
         public signal void open_requested (string uri, TabOpen mode);
         public signal Widget? popup_requested (WebKit.WebView related_view);
@@ -240,6 +247,14 @@ namespace Singularity.Apps.Browser {
                 return false;
             });
             view.context_menu.connect (on_context_menu);
+            var secondary = new GestureClick ();
+            secondary.button = Gdk.BUTTON_SECONDARY;
+            secondary.propagation_phase = PropagationPhase.CAPTURE;
+            secondary.pressed.connect ((n, x, y) => {
+                pointer_x = x / view.zoom_level;
+                pointer_y = y / view.zoom_level;
+            });
+            view.add_controller (secondary);
             view.close.connect (() => close_requested ());
             view.mouse_target_changed.connect ((hit, modifiers) => {
                 view.tooltip_text = hit.context_is_link () ? hit.get_link_uri () : null;
@@ -653,6 +668,18 @@ namespace Singularity.Apps.Browser {
         private bool on_context_menu (WebKit.ContextMenu menu, WebKit.HitTestResult hit) {
             var win = get_root () as Gtk.ApplicationWindow;
             if (win == null) return false;
+            if (DevTools.available) {
+                if (inspect_action == null) {
+                    inspect_action = new SimpleAction ("devtools-inspect-at", null);
+                    inspect_action.activate.connect (() => open_devtools (true, pointer_x, pointer_y));
+                }
+                foreach (var item in menu.get_items ().copy ()) {
+                    if (item.get_stock_action () != WebKit.ContextMenuAction.INSPECT_ELEMENT) continue;
+                    int position = menu.get_items ().index (item);
+                    menu.remove (item);
+                    menu.insert (new WebKit.ContextMenuItem.from_gaction (inspect_action, _("Inspect"), null), position);
+                }
+            }
             if (hit.context_is_link ()) {
                 string link = hit.get_link_uri ();
                 var tab_action = win.lookup_action ("open-link-tab");
@@ -1174,9 +1201,107 @@ namespace Singularity.Apps.Browser {
         public void show_inspector () {
             var target = printable_view ();
             if (target == null) return;
+            if (DevTools.available) {
+                open_devtools (false);
+                return;
+            }
             profile.web_settings.enable_developer_extras = true;
             if (reader_view != null) reader_view.get_settings ().enable_developer_extras = true;
             target.get_inspector ().show ();
+        }
+
+        public void inspect_element () {
+            if (DevTools.available) open_devtools (true);
+            else show_inspector ();
+        }
+
+        private void open_devtools (bool pick, double x = -1, double y = -1) {
+            var target = printable_view ();
+            if (target == null) return;
+            if (devtools == null) {
+                devtools = new DevToolsPanel ();
+                devtools.dock_requested.connect ((docked) => {
+                    if (docked) dock_devtools ();
+                    else detach_devtools ();
+                });
+                devtools.close_requested.connect (close_devtools);
+                devtools.open_uri.connect ((link) => open_requested (link, TabOpen.FOREGROUND));
+                devtools.page_bounds_changed.connect (place_page);
+                dock_devtools ();
+                devtools.attach.begin (target);
+            } else if (devtools_window != null) {
+                devtools_window.present ();
+            }
+            if (pick) devtools.inspect_at (x, y);
+        }
+
+        private void dock_devtools () {
+            if (devtools == null) return;
+            if (devtools_window != null) {
+                devtools_window.child = null;
+                var window = devtools_window;
+                devtools_window = null;
+                window.destroy ();
+            }
+            if (devtools_overlay == null) {
+                devtools_overlay = new Overlay ();
+                devtools_overlay.hexpand = true;
+                devtools_overlay.vexpand = true;
+                devtools_overlay.get_child_position.connect ((widget, out allocation) => {
+                    allocation = { 0, 0, devtools_overlay.get_width (), devtools_overlay.get_height () };
+                    if (widget != stack || page_bounds == null) return widget == stack;
+                    allocation = page_bounds;
+                    return true;
+                });
+                remove (stack);
+                devtools_overlay.add_overlay (stack);
+                insert_child_after (devtools_overlay, prompts);
+            }
+            devtools_overlay.child = devtools;
+            devtools.docked = true;
+        }
+
+        private void place_page (int x, int y, int width, int height) {
+            page_bounds = { x, y, int.max (width, 0), int.max (height, 0) };
+            if (devtools_overlay != null) devtools_overlay.queue_allocate ();
+        }
+
+        private void detach_devtools () {
+            if (devtools == null || devtools_window != null) return;
+            undock_devtools ();
+            var window = new Gtk.Window ();
+            window.title = _("Developer Tools: %s").printf (title != "" ? title : uri);
+            window.set_default_size (1000, 720);
+            window.add_css_class ("singularity");
+            window.child = devtools;
+            devtools.docked = false;
+            window.close_request.connect (() => {
+                window.child = null;
+                devtools_window = null;
+                devtools = null;
+                return false;
+            });
+            devtools_window = window;
+            window.present ();
+        }
+
+        private void undock_devtools () {
+            if (devtools_overlay == null) return;
+            devtools_overlay.child = null;
+            devtools_overlay.remove_overlay (stack);
+            remove (devtools_overlay);
+            devtools_overlay = null;
+            page_bounds = null;
+            insert_child_after (stack, prompts);
+        }
+
+        private void close_devtools () {
+            if (devtools_window != null) {
+                devtools_window.close ();
+                return;
+            }
+            undock_devtools ();
+            devtools = null;
         }
 
         public string? session_uri () {

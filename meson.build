@@ -79,6 +79,7 @@ executable('singularity-browser',
     'src/vault_transport.vala',
     'src/downloads.vala',
     'src/pages.vala',
+    'src/devtools.vala',
     'src/tab.vala',
     'src/sketch.vala',
     'src/tile.vala',
@@ -212,6 +213,14 @@ configure_file(
 install_data('data/dev.sinty.browser.passkey.policy',
   install_dir: get_option('datadir') / 'polkit-1' / 'actions'
 )
+
+devtools_frontend = get_option('devtools_frontend')
+if devtools_frontend != ''
+  install_subdir(devtools_frontend,
+    install_dir: get_option('datadir') / 'singularity-browser' / 'devtools',
+    strip_directory: true
+  )
+endif
 
 install_data('data/dev.sinty.browser.gschema.xml',
   install_dir: get_option('datadir') / 'glib-2.0' / 'schemas'

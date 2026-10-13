@@ -2,6 +2,8 @@
 <gresources>
   <gresource prefix="/dev/sinty/browser">
     <file>browser.css</file>
+    <file>devtools/host.js</file>
+    <file>devtools/translator.js</file>
     <file>icons/browser-tile-drag-symbolic.svg</file>
     <file>icons/browser-tabs-symbolic.svg</file>
     <file>icons/browser-reader-symbolic.svg</file>

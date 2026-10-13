@@ -26,6 +26,7 @@ namespace Singularity.Apps.Browser {
                 }
             }
         }
+        if (webapp == null) DevTools.prepare ();
         var app = new BrowserApp (webapp);
         if (webapp == null) new BrowserSearchProvider (app).export (app);
         return app.run (args);

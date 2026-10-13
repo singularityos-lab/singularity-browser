@@ -661,6 +661,7 @@ namespace Singularity.Apps.Browser {
             set_enabled ("print", web);
             set_enabled ("find", web);
             set_enabled ("devtools", web);
+            set_enabled ("inspect-element", web);
             set_enabled ("install-webapp", web && Store.recordable (tab.uri) && !is_private);
             set_enabled ("share", !Address.is_internal (tab.uri));
         }
@@ -1492,6 +1493,7 @@ namespace Singularity.Apps.Browser {
                 if (!Address.is_internal (t.uri)) Singularity.Share.uris (this, { t.uri }, t.display_title);
             });
             add_simple ("devtools", (t) => t.show_inspector ());
+            add_simple ("inspect-element", (t) => t.inspect_element ());
             add_simple ("mute-tab", (t) => t.toggle_mute ());
             add_simple ("pin-tab", (t) => {
                 var tile = tile_of (t);

@@ -69,8 +69,13 @@
       <summary>Offer to save passwords</summary>
     </key>
     <key name="developer-tools" type="b">
-      <default>false</default>
+      <default>true</default>
       <summary>Show Inspect Element in page menus</summary>
+    </key>
+    <key name="advanced-developer-tools" type="b">
+      <default>false</default>
+      <summary>Advanced developer tools</summary>
+      <description>Open the Chrome DevTools interface on the WebKit engine. While on, the engine listens for inspector connections on a local port that any local program can reach. Takes effect after a restart.</description>
     </key>
     <key name="default-zoom" type="d">
       <range min="0.3" max="3.0"/>
