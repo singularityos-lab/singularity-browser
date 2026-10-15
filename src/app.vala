@@ -839,7 +839,7 @@ namespace Singularity.Apps.Browser {
             add_app_action ("quit", () => {
                 save_session ();
                 var windows = new Gee.ArrayList<Gtk.Window> ();
-                foreach (var w in get_windows ()) windows.add (w);
+                foreach (var w in get_windows ().copy ()) windows.add (w);
                 foreach (var w in windows) w.close ();
             });
             add_app_action ("settings", () => {
