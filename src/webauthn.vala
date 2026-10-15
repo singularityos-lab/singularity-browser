@@ -163,6 +163,7 @@ namespace Singularity.Apps.Browser {
                     value.data = data[pos:pos + (int) arg];
                     pos += (int) arg;
                     if (major == 3) {
+                        if (!((string) value.data).validate (value.data.length)) throw new WebAuthnError.UNKNOWN ("invalid CBOR text");
                         value.kind = CborType.TEXT;
                         var sb = new StringBuilder ();
                         sb.append_len ((string) value.data, value.data.length);
