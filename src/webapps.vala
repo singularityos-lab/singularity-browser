@@ -235,7 +235,7 @@ namespace Singularity.Apps.Browser {
                 var session = new Soup.Session ();
                 session.timeout = 10;
                 var message = new Soup.Message ("GET", icon_url);
-                var bytes = yield session.send_and_read_async (message, Priority.DEFAULT, null);
+                var bytes = yield Singularity.HttpBody.read (session, message, 8 * 1024 * 1024);
                 if (message.status_code != 200) return null;
                 var texture = Gdk.Texture.from_bytes (bytes);
                 return texture.get_width () >= 48 ? texture : null;

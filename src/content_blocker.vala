@@ -130,7 +130,7 @@ namespace Singularity.Apps.Browser {
                     text = (string) data;
                 } else {
                     var message = new Soup.Message ("GET", url);
-                    var bytes = yield http.send_and_read_async (message, Priority.LOW, null);
+                    var bytes = yield Singularity.HttpBody.read (http, message, 64 * 1024 * 1024, Priority.LOW, null);
                     if (message.status_code != 200) return null;
                     text = Util.bytes_to_string (bytes);
                 }

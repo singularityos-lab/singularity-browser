@@ -392,7 +392,7 @@ namespace Singularity.Apps.Browser {
             remote_cancel = new Cancellable ();
             try {
                 var message = new Soup.Message ("GET", url);
-                var bytes = yield http.send_and_read_async (message, Priority.DEFAULT, remote_cancel);
+                var bytes = yield Singularity.HttpBody.read (http, message, 1024 * 1024, Priority.DEFAULT, remote_cancel);
                 if (message.status_code != 200 || entry.text != query || !editing) return;
                 var found = Address.parse_suggestions (Util.bytes_to_string (bytes));
                 rebuild (query, found);
