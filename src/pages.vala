@@ -7,6 +7,7 @@ namespace Singularity.Apps.Browser {
         public signal void navigate (string uri, bool new_tab);
 
         protected Services services;
+        private uint refresh_source = 0;
 
         protected NativePage (Services services) {
             Object (orientation: Orientation.VERTICAL, spacing: 0);
@@ -19,6 +20,23 @@ namespace Singularity.Apps.Browser {
         public virtual string title { owned get { return ""; } }
         public virtual void refresh () {}
         public virtual void focus_primary () {}
+
+        protected void queue_refresh () {
+            if (refresh_source != 0) return;
+            refresh_source = Timeout.add (120, () => {
+                refresh_source = 0;
+                refresh ();
+                return Source.REMOVE;
+            });
+        }
+
+        public override void dispose () {
+            if (refresh_source != 0) {
+                Source.remove (refresh_source);
+                refresh_source = 0;
+            }
+            base.dispose ();
+        }
 
         protected static Widget site_icon (Services services, string url, string title, int size = 16) {
             var image = new Image.from_icon_name ("web-browser-symbolic");
@@ -330,7 +348,7 @@ namespace Singularity.Apps.Browser {
             box.append (search);
             list = new Box (Orientation.VERTICAL, 6);
             box.append (list);
-            changed_handler = services.store.history_changed.connect (refresh);
+            changed_handler = services.store.history_changed.connect (queue_refresh);
             refresh ();
         }
 
@@ -445,7 +463,7 @@ namespace Singularity.Apps.Browser {
             box.append (search);
             list = new Box (Orientation.VERTICAL, 6);
             box.append (list);
-            changed_handler = services.store.bookmarks_changed.connect (refresh);
+            changed_handler = services.store.bookmarks_changed.connect (queue_refresh);
             refresh ();
         }
 
