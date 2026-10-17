@@ -42,6 +42,8 @@ namespace Singularity.Apps.Browser {
         public signal void action_changed (string id);
         public signal void tabs_need_refresh ();
 
+        public ContentBlocker? blocker { get; set; }
+
         public ExtensionHost (ExtensionManager manager, Profile profile) {
             Object (manager: manager, profile: profile);
         }
@@ -55,10 +57,12 @@ namespace Singularity.Apps.Browser {
             security.register_uri_scheme_as_cors_enabled (SCHEME);
             manager.changed.connect (() => {
                 sync_backgrounds ();
+                sync_rules.begin ();
                 tabs_need_refresh ();
             });
             Idle.add (() => {
                 sync_backgrounds ();
+                sync_rules.begin ();
                 return Source.REMOVE;
             });
         }
@@ -519,10 +523,16 @@ namespace Singularity.Apps.Browser {
                     var png = texture.save_to_png_bytes ();
                     return Json.to_string (string_node ("data:image/png;base64," + Base64.encode (png.get_data ())), false);
                 case "dnr.enabled":
+                    return Json.to_string (dnr_state (extension).get_member ("enabled"), false);
                 case "dnr.dynamic":
-                    return "[]";
+                    return Json.to_string (dnr_state (extension).get_member ("dynamic"), false);
                 case "dnr.updateRulesets":
+                    update_rulesets (extension, argo);
+                    yield compile_rules (extension);
+                    return null;
                 case "dnr.updateDynamic":
+                    update_dynamic (extension, argo);
+                    yield compile_rules (extension);
                     return null;
                 case "offscreen.create":
                     string offscreen_url = argo.get_string_member_with_default ("url", "");
@@ -956,5 +966,149 @@ namespace Singularity.Apps.Browser {
             node.set_int (value);
             return node;
         }
+    
+        private string dnr_path (Extension extension) {
+            return Path.build_filename (data_root, extension.id, "dnr.json");
+        }
+
+        private Json.Array? manifest_rulesets (Extension extension) {
+            var m = extension.manifest;
+            if (!m.has_member ("declarative_net_request")) return null;
+            var dnr = m.get_object_member ("declarative_net_request");
+            if (dnr == null || !dnr.has_member ("rule_resources")) return null;
+            return dnr.get_array_member ("rule_resources");
+        }
+
+        private Json.Object dnr_state (Extension extension) {
+            var parser = new Json.Parser ();
+            try {
+                parser.load_from_file (dnr_path (extension));
+                var root = parser.get_root ();
+                if (root != null && root.get_node_type () == Json.NodeType.OBJECT) {
+                    var o = root.get_object ();
+                    if (o.has_member ("enabled") && o.has_member ("dynamic")) return o;
+                }
+            } catch (Error e) {
+            }
+            var state = new Json.Object ();
+            var enabled = new Json.Array ();
+            var rulesets = manifest_rulesets (extension);
+            if (rulesets != null) {
+                foreach (var node in rulesets.get_elements ()) {
+                    var r = node.get_object ();
+                    if (r.get_boolean_member_with_default ("enabled", false)) enabled.add_string_element (r.get_string_member_with_default ("id", ""));
+                }
+            }
+            state.set_array_member ("enabled", enabled);
+            state.set_array_member ("dynamic", new Json.Array ());
+            return state;
+        }
+
+        private void save_dnr (Extension extension, Json.Object state) {
+            var node = new Json.Node (Json.NodeType.OBJECT);
+            node.set_object (state);
+            string path = dnr_path (extension);
+            DirUtils.create_with_parents (Path.get_dirname (path), 0700);
+            try {
+                FileUtils.set_contents (path, Json.to_string (node, false));
+            } catch (FileError e) {
+                warning ("Saving the rule state of %s: %s", extension.id, e.message);
+            }
+        }
+
+        private static string[] ids_of (Json.Object o, string key) {
+            string[] out_ids = {};
+            if (!o.has_member (key)) return out_ids;
+            foreach (var n in o.get_array_member (key).get_elements ()) {
+                if (n.get_value_type () == typeof (string)) out_ids += n.get_string ();
+                else out_ids += n.get_int ().to_string ();
+            }
+            return out_ids;
+        }
+
+        private void update_rulesets (Extension extension, Json.Object options) {
+            var state = dnr_state (extension);
+            string[] disable = ids_of (options, "disableRulesetIds");
+            string[] enable = ids_of (options, "enableRulesetIds");
+            var known = new Gee.HashSet<string> ();
+            var rulesets = manifest_rulesets (extension);
+            if (rulesets != null) foreach (var n in rulesets.get_elements ()) known.add (n.get_object ().get_string_member_with_default ("id", ""));
+            var enabled = new Json.Array ();
+            var seen = new Gee.HashSet<string> ();
+            foreach (string id in ids_of (state, "enabled")) {
+                if (!(id in disable) && known.contains (id) && seen.add (id)) enabled.add_string_element (id);
+            }
+            foreach (string id in enable) {
+                if (known.contains (id) && seen.add (id)) enabled.add_string_element (id);
+            }
+            state.set_array_member ("enabled", enabled);
+            save_dnr (extension, state);
+        }
+
+        private void update_dynamic (Extension extension, Json.Object options) {
+            var state = dnr_state (extension);
+            string[] remove = ids_of (options, "removeRuleIds");
+            var rules = new Json.Array ();
+            foreach (var n in state.get_array_member ("dynamic").get_elements ()) {
+                var r = n.get_object ();
+                if (!(r.get_int_member_with_default ("id", 0).to_string () in remove)) rules.add_element (n);
+            }
+            if (options.has_member ("addRules")) {
+                foreach (var n in options.get_array_member ("addRules").get_elements ()) {
+                    if (n.get_node_type () == Json.NodeType.OBJECT && rules.get_length () < 30000) rules.add_element (n);
+                }
+            }
+            state.set_array_member ("dynamic", rules);
+            save_dnr (extension, state);
+        }
+
+        private async void compile_rules (Extension extension) {
+            if (blocker == null) return;
+            if (!manager.is_enabled (extension.id) || !(extension.has_permission ("declarativeNetRequest") || extension.has_permission ("declarativeNetRequestWithHostAccess"))) {
+                yield blocker.set_extension_rules (extension.id, null);
+                return;
+            }
+            var state = dnr_state (extension);
+            var compiler = new DnrCompiler ();
+            var rulesets = manifest_rulesets (extension);
+            string[] enabled = ids_of (state, "enabled");
+            if (rulesets != null) {
+                foreach (var n in rulesets.get_elements ()) {
+                    var r = n.get_object ();
+                    if (!(r.get_string_member_with_default ("id", "") in enabled)) continue;
+                    try {
+                        var parser = new Json.Parser ();
+                        parser.load_from_file (extension.resolve (r.get_string_member_with_default ("path", "")));
+                        var root = parser.get_root ();
+                        if (root != null && root.get_node_type () == Json.NodeType.ARRAY) compiler.add_rules (root.get_array ());
+                    } catch (Error e) {
+                        warning ("Ruleset %s of %s: %s", r.get_string_member_with_default ("id", ""), extension.id, e.message);
+                    }
+                }
+            }
+            compiler.add_rules (state.get_array_member ("dynamic"));
+            if (compiler.rule_count == 0) {
+                yield blocker.set_extension_rules (extension.id, null);
+                return;
+            }
+            debug ("Extension %s: %d network rules, %d skipped", extension.id, compiler.rule_count, compiler.skipped);
+            yield blocker.set_extension_rules (extension.id, compiler.to_json ());
+        }
+
+        private async void sync_rules () {
+            var live = new Gee.HashSet<string> ();
+            foreach (var extension in manager.extensions) {
+                live.add (extension.id);
+                yield compile_rules (extension);
+            }
+            if (blocker != null) {
+                foreach (string id in rules_compiled) {
+                    if (!live.contains (id)) yield blocker.set_extension_rules (id, null);
+                }
+            }
+            rules_compiled = live;
+        }
+
+        private Gee.HashSet<string> rules_compiled = new Gee.HashSet<string> ();
     }
 }

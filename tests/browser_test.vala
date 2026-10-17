@@ -260,6 +260,27 @@ void test_filter_regex () {
     assert (FilterCompiler.to_regex ("/banner/*/img^") == "\\/banner\\/.*\\/img[/:?=&]?");
     assert (FilterCompiler.to_regex ("|https://track.") == "^https:\\/\\/track\\.");
     assert (FilterCompiler.to_regex ("swf|") == "swf$");
+    var dnr = new DnrCompiler ();
+    var dnr_parser = new Json.Parser ();
+    try {
+        dnr_parser.load_from_data ("""[
+            {"id":1,"action":{"type":"block"},"condition":{"urlFilter":"||ads.example.com^","resourceTypes":["script","image"]}},
+            {"id":2,"action":{"type":"allow"},"condition":{"urlFilter":"||ads.example.com/ok","initiatorDomains":["news.example"]}},
+            {"id":3,"action":{"type":"block"},"condition":{"requestDomains":["track.one","track.two"],"domainType":"thirdParty"}},
+            {"id":4,"action":{"type":"redirect","redirect":{"extensionPath":"/x.js"}},"condition":{"urlFilter":"x.js"}},
+            {"id":5,"action":{"type":"block"},"condition":{"regexFilter":"^https?://(a|b)\\.com"}}
+        ]""");
+    } catch (Error e) {
+        assert_not_reached ();
+    }
+    dnr.add_rules (dnr_parser.get_root ().get_array ());
+    assert (dnr.rule_count == 4);
+    assert (dnr.skipped == 2);
+    string dnr_json = dnr.to_json ();
+    assert (dnr_json.contains ("\"ignore-previous-rules\""));
+    assert (dnr_json.contains ("\"*news.example\""));
+    assert (dnr_json.contains ("track\\\\.two[/:?]"));
+    assert (dnr_json.index_of ("\"block\"") < dnr_json.index_of ("ignore-previous-rules"));
     assert (FilterCompiler.to_regex ("*tracker.js*") == "tracker\\.js");
     assert (FilterCompiler.to_regex ("ab") == null);
     assert (FilterCompiler.to_regex ("a(b)c") == null);

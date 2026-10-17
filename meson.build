@@ -47,6 +47,7 @@ core = files(
   'src/store.vala',
   'src/bookmark_import.vala',
   'src/filter_compiler.vala',
+  'src/dnr.vala',
   'src/reader.vala',
 )
 

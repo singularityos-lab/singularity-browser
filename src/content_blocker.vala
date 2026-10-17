@@ -5,6 +5,7 @@ namespace Singularity.Apps.Browser {
         private WebKit.UserContentFilterStore filter_store;
         private string lists_dir;
         private Gee.HashMap<string, WebKit.UserContentFilter> filters = new Gee.HashMap<string, WebKit.UserContentFilter> ();
+        private Gee.HashMap<string, WebKit.UserContentFilter> extension_filters = new Gee.HashMap<string, WebKit.UserContentFilter> ();
         private Soup.Session http;
         private bool refreshing = false;
 
@@ -35,8 +36,30 @@ namespace Singularity.Apps.Browser {
 
         public void apply (WebKit.UserContentManager manager, bool allowed_on_site) {
             manager.remove_all_filters ();
+            foreach (var filter in extension_filters.values) manager.add_filter (filter);
             if (!enabled || allowed_on_site) return;
             foreach (var filter in filters.values) manager.add_filter (filter);
+        }
+
+        public async void set_extension_rules (string id, string? json) {
+            string key = "ext-" + id;
+            if (json == null) {
+                if (!extension_filters.has_key (id)) return;
+                extension_filters.unset (id);
+                try {
+                    yield filter_store.remove (key, null);
+                } catch (Error e) {
+                }
+                changed ();
+                return;
+            }
+            try {
+                extension_filters[id] = yield filter_store.save (key, new Bytes (json.data), null);
+            } catch (Error e) {
+                warning ("Rules of extension %s could not be compiled: %s", id, e.message);
+                return;
+            }
+            changed ();
         }
 
         public async void start () {

@@ -9,12 +9,27 @@ int main (string[] args) {
         printerr ("%s\n", e.message);
         return 1;
     }
-    var compiler = new FilterCompiler ();
-    compiler.add_list (text);
-    string json = compiler.to_json ();
-    print ("lines %d, blocking %d, hiding %d, exceptions %d, skipped %d, rules %d, json %d bytes\n",
-           compiler.stats.lines, compiler.stats.blocking, compiler.stats.hiding, compiler.stats.exceptions,
-           compiler.stats.skipped, compiler.rule_count, json.length);
+    string json;
+    if (list_path.has_suffix (".json")) {
+        var parser = new Json.Parser ();
+        try {
+            parser.load_from_data (text);
+        } catch (Error e) {
+            printerr ("%s\n", e.message);
+            return 1;
+        }
+        var dnr = new DnrCompiler ();
+        dnr.add_rules (parser.get_root ().get_array ());
+        json = dnr.to_json ();
+        print ("network rules %d, skipped %d, json %d bytes\n", dnr.rule_count, dnr.skipped, json.length);
+    } else {
+        var compiler = new FilterCompiler ();
+        compiler.add_list (text);
+        json = compiler.to_json ();
+        print ("lines %d, blocking %d, hiding %d, exceptions %d, skipped %d, rules %d, json %d bytes\n",
+               compiler.stats.lines, compiler.stats.blocking, compiler.stats.hiding, compiler.stats.exceptions,
+               compiler.stats.skipped, compiler.rule_count, json.length);
+    }
     string dir;
     try {
         dir = DirUtils.make_tmp ("filter-store-XXXXXX");

@@ -39,6 +39,7 @@ namespace Singularity.Apps.Browser {
             extension_manager = new ExtensionManager (Path.build_filename (dir, "extensions"));
             extension_manager.user_agent = "Singularity-Browser/" + Config.VERSION;
             extensions = new ExtensionHost (extension_manager, main_profile);
+            extensions.blocker = blocker;
         }
 
         public Profile acquire_private () {
