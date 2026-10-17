@@ -20,6 +20,8 @@ namespace Singularity.Apps.Browser {
         private Button forward_bubble;
         private Button reload_bubble;
         private Button downloads_bubble;
+        private Button? extensions_bubble;
+        private ExtensionsPopover? extensions_popover;
         private Button? open_in_browser = null;
         private Overlay root_overlay;
         private OverlaySearch? tab_search = null;
@@ -81,6 +83,13 @@ namespace Singularity.Apps.Browser {
                     var tab = current_tab ();
                     if (tab != null && !Address.is_internal (tab.uri)) ((BrowserApp) application).open_in_main_browser (tab.uri);
                 });
+            }
+
+            if (!is_private && webapp == null) {
+                extensions_bubble = add_bubble_icon ("application-x-addon-symbolic", _("Extensions"), show_extensions_popover);
+                services.extension_manager.changed.connect (sync_extensions);
+                services.extensions.action_changed.connect (() => sync_extensions ());
+                sync_extensions ();
             }
 
             downloads_bubble = add_bubble_icon ("folder-download-symbolic", _("Downloads"), show_downloads_popover);
@@ -250,6 +259,7 @@ namespace Singularity.Apps.Browser {
                 }
             });
             tab.import_requested.connect ((source) => ((BrowserApp) application).import_bookmarks (this, source));
+            tab.extension_install.connect ((id) => install_extension.begin (id));
         }
 
         public BrowserTab add_tab (string? uri, BrowserTile? tile = null, int position = -1, bool activate = true) {
@@ -826,6 +836,74 @@ namespace Singularity.Apps.Browser {
             toast.button_label = _("Open");
             toast.button_clicked.connect (() => Downloads.open (item));
             add_toast (toast);
+        }
+
+        private void sync_extensions () {
+            if (extensions_bubble == null) return;
+            extensions_bubble.visible = !services.extension_manager.extensions.is_empty;
+        }
+
+        private void show_extensions_popover () {
+            if (extensions_popover == null) {
+                extensions_popover = new ExtensionsPopover (services, extensions_bubble);
+                extensions_popover.open_url.connect ((url) => open (url, TabOpen.FOREGROUND));
+            }
+            extensions_popover.show_list ();
+            extensions_popover.popup ();
+        }
+
+        public async void install_extension (string id) {
+            Bytes package;
+            try {
+                package = yield services.extension_manager.download (id);
+            } catch (Error e) {
+                show_error (_("The extension could not be downloaded"), e.message);
+                return;
+            }
+            string staging;
+            Extension preview;
+            try {
+                preview = services.extension_manager.inspect (package, id, out staging);
+            } catch (Error e) {
+                show_error (_("The extension could not be added"), e.message);
+                return;
+            }
+            string[] lines = ExtensionPermissions.describe (preview);
+            ExtensionManager.remove_tree (staging);
+            string body = lines.length == 0 ? _("It needs no special permissions.")
+                : _("It can:") + "\n• " + string.joinv ("\n• ", lines);
+            var dialog = new ConfirmDialog (get_application (), _("Add “%s”?").printf (preview.name), null,
+                body, _("Add Extension"), ConfirmDialog.ActionStyle.SUGGESTED);
+            dialog.transient_for = this;
+            dialog.modal = true;
+            bool accepted = false;
+            dialog.response.connect ((response) => {
+                accepted = response == ConfirmDialog.Response.PRIMARY;
+                Idle.add (() => {
+                    install_extension.callback ();
+                    return Source.REMOVE;
+                });
+            });
+            dialog.present ();
+            yield;
+            if (!accepted) return;
+            try {
+                services.extension_manager.install (package, id);
+            } catch (Error e) {
+                show_error (_("The extension could not be added"), e.message);
+                return;
+            }
+            sync_extensions ();
+            if (extensions_bubble != null) Singularity.Motion.reveal (extensions_bubble, Singularity.Motion.Preset.FADE);
+            var tab = current_tab ();
+            if (tab != null) tab.reload ();
+        }
+
+        private void show_error (string title, string message) {
+            var dialog = new ConfirmDialog (get_application (), title, null, message, _("OK"));
+            dialog.transient_for = this;
+            dialog.modal = true;
+            dialog.present ();
         }
 
         private void show_downloads_popover () {

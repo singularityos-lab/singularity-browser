@@ -74,6 +74,7 @@ namespace Singularity.Apps.Browser {
         public signal void focus_address ();
         public signal void state_changed ();
         public signal void download_only ();
+        public signal void extension_install (string id);
 
         public BrowserTab (Services services, Profile profile, string? uri = null, WebKit.WebView? related = null) {
             Object (tab_id: Uuid.string_random (), services: services, profile: profile,
@@ -197,6 +198,7 @@ namespace Singularity.Apps.Browser {
                 string? u = view.get_uri ();
                 if (u != null && !reader_active) {
                     uri = u;
+                    if (!profile.ephemeral) offer_extension (u);
                     if (password_site != "" && Address.origin_of (u) != password_site) {
                         password_capture_revision++;
                         password_site = "";
@@ -440,11 +442,15 @@ namespace Singularity.Apps.Browser {
                         if (key == "password" && Address.origin_of (view.get_uri ()) == password_site) continue;
                         dismiss_prompt (key);
                     }
+                    if (!profile.ephemeral) offer_extension (view.get_uri ());
                     break;
                 case WebKit.LoadEvent.FINISHED:
                     string? u = view.get_uri ();
                     if (u != null) profile.record_visit (u, view.get_title () ?? "");
-                    if (!profile.ephemeral) services.extensions.tab_updated (this);
+                    if (!profile.ephemeral) {
+                        services.extensions.tab_updated (this);
+                        offer_extension (u);
+                    }
                     schedule_reader_probe ();
                     auto_fill.begin (password_revision);
                     break;
@@ -640,6 +646,21 @@ namespace Singularity.Apps.Browser {
             } else {
                 profile.set_site_value (site, key, value);
             }
+        }
+
+        private void offer_extension (string? address) {
+            string? id = address != null ? ExtensionManager.id_from_store_url (address) : null;
+            if (id == null || services.extension_manager.get_extension (id) != null) {
+                dismiss_prompt ("extension-store");
+                return;
+            }
+            if (active_prompts.has_key ("extension-store")) return;
+            var banner = show_prompt ("extension-store", "application-x-addon-symbolic",
+                _("This extension can be added to Browser"), _("Add to Browser"), null);
+            banner.button_clicked.connect (() => {
+                dismiss_prompt ("extension-store");
+                extension_install (id);
+            });
         }
 
         private Banner show_prompt (string id, string icon, string text, string? primary, string? secondary) {

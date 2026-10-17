@@ -39,7 +39,7 @@ const manifest = @MANIFEST@;
 const messages = @MESSAGES@;
 let lastError;
 const runtime = {};
-const raw = (op, args) => handler.postMessage(JSON.stringify({ op, args: args === undefined ? null : args }))
+const raw = (op, args) => handler.postMessage(JSON.stringify({ op, kind, args: args === undefined ? null : args }))
     .then(reply => reply === null || reply === undefined || reply === "" ? undefined : JSON.parse(reply));
 const call = (op, args, callback) => {
     const promise = raw(op, args);
@@ -60,6 +60,25 @@ const event = () => {
     };
 };
 const tail = args => typeof args[args.length - 1] === "function" ? args.pop() : undefined;
+const ports = new Map();
+const makePort = (portId, name, sender) => {
+    const port = {
+        name: name || "",
+        sender,
+        onMessage: event(),
+        onDisconnect: event(),
+        postMessage: message => { if (!ports.has(portId)) throw new Error("Attempting to use a disconnected port object"); raw("port.post", { portId, message: message === undefined ? null : message }); },
+        disconnect: () => { if (ports.delete(portId)) raw("port.close", { portId }); }
+    };
+    ports.set(portId, port);
+    return port;
+};
+const openPort = (info, tabId) => {
+    const portId = id + ":" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const port = makePort(portId, info && info.name, undefined);
+    raw("port.open", { portId, name: port.name, tabId: tabId === undefined ? null : tabId });
+    return port;
+};
 const onMessage = event(), onMessageExternal = event(), onInstalled = event(), onStartup = event();
 const onChanged = event(), onAlarm = event(), onClicked = event(), onConnect = event();
 const onUpdated = event(), onActivated = event(), onRemoved = event(), onCreated = event();
@@ -91,7 +110,7 @@ Object.assign(runtime, {
         if (args.length > 1 && typeof args[0] === "string" && args[0] !== id) args.shift();
         return call("runtime.sendMessage", { message: args[0] === undefined ? null : args[0] }, callback);
     },
-    connect: () => { throw new Error("runtime.connect is not supported yet"); },
+    connect: (...args) => { const info = typeof args[0] === "string" ? args[1] : args[0]; return openPort(info || {}); },
     openOptionsPage: callback => call("runtime.openOptionsPage", null, callback),
     getPlatformInfo: callback => { const info = { os: "linux", arch: "x86-64", nacl_arch: "x86-64" }; if (callback) callback(info); return Promise.resolve(info); },
     setUninstallURL: (url, callback) => { if (callback) callback(); return Promise.resolve(); },
@@ -119,9 +138,23 @@ const chrome = {
     extension: {
         getURL: path => runtime.getURL(path),
         inIncognitoContext: false,
-        isAllowedIncognitoAccess: callback => { if (callback) callback(false); return Promise.resolve(false); }
-    }
+        isAllowedIncognitoAccess: callback => { if (callback) callback(false); return Promise.resolve(false); },
+        isAllowedFileSchemeAccess: callback => { if (callback) callback(false); return Promise.resolve(false); },
+        getViews: () => [],
+        getBackgroundPage: () => null,
+        sendMessage: (...args) => runtime.sendMessage(...args),
+        onMessage
+    },
+    dom: { openOrClosedShadowRoot: element => element && (element.openOrClosedShadowRoot || element.shadowRoot) || null }
 };
+runtime.connectNative = () => { throw new Error("Native messaging is not available in this browser"); };
+runtime.sendNativeMessage = (...args) => { const callback = tail(args); const p = Promise.reject(new Error("Native messaging is not available in this browser")); if (callback) { p.catch(e => { lastError = { message: e.message }; try { callback(); } finally { lastError = undefined; } }); return; } return p; };
+const setting = value => ({
+    get: (details, callback) => { const r = { value, levelOfControl: "controllable_by_this_extension" }; if (callback) callback(r); return Promise.resolve(r); },
+    set: (details, callback) => { if (callback) callback(); return Promise.resolve(); },
+    clear: (details, callback) => { if (callback) callback(); return Promise.resolve(); },
+    onChange: event()
+});
 if (kind !== "content") {
     Object.assign(chrome, {
         tabs: {
@@ -133,6 +166,11 @@ if (kind !== "content") {
             remove: (tabIds, callback) => call("tabs.remove", { tabIds: Array.isArray(tabIds) ? tabIds : [tabIds] }, callback),
             reload: (...args) => { const callback = tail(args); return call("tabs.reload", { tabId: typeof args[0] === "number" ? args[0] : null }, callback); },
             sendMessage: (tabId, message, ...rest) => call("tabs.sendMessage", { tabId, message }, tail(rest)),
+            captureVisibleTab: (...args) => { const callback = tail(args); return call("tabs.capture", null, callback); },
+            detectLanguage: (...args) => { const callback = tail(args); if (callback) callback("und"); return Promise.resolve("und"); },
+            getZoom: (...args) => { const callback = tail(args); if (callback) callback(1); return Promise.resolve(1); },
+            setZoom: (...args) => { const callback = tail(args); if (callback) callback(); return Promise.resolve(); },
+            connect: (tabId, info) => openPort(info || {}, tabId),
             onUpdated, onActivated, onRemoved, onCreated, onReplaced: event(), onHighlighted: event(), onMoved: event(),
             TAB_ID_NONE: -1
         },
@@ -145,6 +183,7 @@ if (kind !== "content") {
             onFocusChanged: event(), onCreated: event(), onRemoved: event()
         },
         scripting: {
+            ExecutionWorld: { ISOLATED: "ISOLATED", MAIN: "MAIN" },
             executeScript: (details, callback) => call("scripting.executeScript", {
                 tabId: details.target && details.target.tabId, files: details.files || null,
                 func: details.func ? details.func.toString() : null, args: details.args || []
@@ -214,7 +253,27 @@ if (kind !== "content") {
             createDocument: (params, callback) => call("offscreen.create", params || {}, callback),
             closeDocument: callback => call("offscreen.close", null, callback),
             hasDocument: callback => call("offscreen.has", null, callback),
-            Reason: { DOM_PARSER: "DOM_PARSER", CLIPBOARD: "CLIPBOARD", BLOBS: "BLOBS" }
+            Reason: new Proxy({}, { get: (t, key) => String(key) })
+        },
+        management: {
+            getSelf: callback => { const r = { id, name: manifest.name, version: manifest.version, enabled: true, installType: "normal", type: "extension", mayDisable: true, offlineEnabled: true, permissions: manifest.permissions || [], hostPermissions: manifest.host_permissions || [] }; if (callback) callback(r); return Promise.resolve(r); },
+            getAll: callback => { if (callback) callback([]); return Promise.resolve([]); },
+            onEnabled: event(), onDisabled: event(), onInstalled: event(), onUninstalled: event()
+        },
+        privacy: {
+            services: { passwordSavingEnabled: setting(false), autofillCreditCardEnabled: setting(false), autofillAddressEnabled: setting(false), autofillEnabled: setting(false) },
+            network: { webRTCIPHandlingPolicy: setting("default"), networkPredictionEnabled: setting(false) },
+            websites: { thirdPartyCookiesAllowed: setting(false), hyperlinkAuditingEnabled: setting(false) }
+        },
+        webRequest: {
+            onBeforeRequest: event(), onBeforeSendHeaders: event(), onSendHeaders: event(), onHeadersReceived: event(),
+            onAuthRequired: event(), onResponseStarted: event(), onBeforeRedirect: event(), onCompleted: event(), onErrorOccurred: event(),
+            handlerBehaviorChanged: callback => { if (callback) callback(); return Promise.resolve(); }
+        },
+        fontSettings: {
+            getFontList: callback => call("fontSettings.getFontList", null, callback),
+            getFont: (details, callback) => { const r = { fontId: "", levelOfControl: "controllable_by_this_extension" }; if (callback) callback(r); return Promise.resolve(r); },
+            onFontChanged: event()
         },
         sidePanel: { setOptions: () => Promise.resolve(), setPanelBehavior: () => Promise.resolve(), open: () => Promise.resolve() },
         webNavigation: { onCommitted: event(), onCompleted: event(), onBeforeNavigate: event(), onDOMContentLoaded: event(), onHistoryStateUpdated: event(), getFrame: () => Promise.resolve(null), getAllFrames: () => Promise.resolve([]) },
@@ -237,6 +296,21 @@ globalThis.__sintyExtension = {
                 }
                 if (!pending) respond(undefined);
             });
+        }
+        if (type === "connect") {
+            const port = makePort(data.portId, data.name, from);
+            for (const listener of [...onConnect.set]) { try { listener(port); } catch (e) { console.error(e); } }
+            return null;
+        }
+        if (type === "portMessage") {
+            const port = ports.get(data.portId);
+            if (port) for (const listener of [...port.onMessage.set]) { try { listener(data.message, port); } catch (e) { console.error(e); } }
+            return null;
+        }
+        if (type === "portClose") {
+            const port = ports.get(data.portId);
+            if (port) { ports.delete(data.portId); for (const listener of [...port.onDisconnect.set]) { try { listener(port); } catch (e) { console.error(e); } } }
+            return null;
         }
         const fire = (target, ...values) => { for (const listener of [...target.set]) { try { listener(...values); } catch (e) { console.error(e); } } return null; };
         if (type === "storage") { fire(onChanged, data.changes, data.area); return fire(chrome.storage[data.area].onChanged, data.changes); }

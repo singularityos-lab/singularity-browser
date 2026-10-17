@@ -25,6 +25,19 @@ namespace Singularity.Apps.Browser {
             public SourceFunc resume;
         }
 
+        private class Endpoint {
+            public WebKit.WebView? view;
+            public string? world;
+        }
+
+        private class Channel {
+            public string extension;
+            public Endpoint opener;
+            public Endpoint target;
+        }
+
+        private Gee.HashMap<string, Channel> channels = new Gee.HashMap<string, Channel> ();
+
         public signal void open_url (string url);
         public signal void action_changed (string id);
         public signal void tabs_need_refresh ();
@@ -100,7 +113,7 @@ namespace Singularity.Apps.Browser {
                 content.register_script_message_handler_with_reply (handler, world);
                 content.register_script_message_handler_with_reply (handler, null);
                 content.script_message_with_reply_received[handler].connect ((value, reply) => {
-                    handle_message.begin (extension, tab, null, value, reply);
+                    handle_message.begin (extension, tab, null, tab.view, value, reply);
                     return true;
                 });
                 string[] own_pages = { "%s://%s/*".printf (SCHEME, extension.id) };
@@ -155,18 +168,20 @@ namespace Singularity.Apps.Browser {
             var content = new WebKit.UserContentManager ();
             string handler = ExtensionScript.handler_for (extension.id);
             content.register_script_message_handler_with_reply (handler, null);
+            WebKit.WebView? created = null;
             content.script_message_with_reply_received[handler].connect ((value, reply) => {
-                handle_message.begin (extension, null, null, value, reply);
+                handle_message.begin (extension, null, null, created, value, reply);
                 return true;
             });
             string[] own_pages = { "%s://%s/*".printf (SCHEME, extension.id) };
             content.add_script (new WebKit.UserScript (ExtensionScript.source (extension, ExtensionContext.PAGE, messages_json (extension)),
                 WebKit.UserContentInjectedFrames.ALL_FRAMES, WebKit.UserScriptInjectionTime.START, own_pages, null));
-            return (WebKit.WebView) Object.new (typeof (WebKit.WebView),
+            created = (WebKit.WebView) Object.new (typeof (WebKit.WebView),
                 "network-session", profile.session,
                 "web-context", profile.context,
                 "user-content-manager", content,
                 "settings", profile.web_settings);
+            return created;
         }
 
         public void action_clicked (Extension extension) {
@@ -222,18 +237,20 @@ namespace Singularity.Apps.Browser {
             var content = new WebKit.UserContentManager ();
             string handler = ExtensionScript.handler_for (extension.id);
             content.register_script_message_handler_with_reply (handler, null);
+            WebKit.WebView? created = null;
             content.script_message_with_reply_received[handler].connect ((value, reply) => {
-                handle_message.begin (extension, null, "background", value, reply);
+                handle_message.begin (extension, null, "background", created, value, reply);
                 return true;
             });
             string[] own_pages = { "%s://%s/*".printf (SCHEME, extension.id) };
             content.add_script (new WebKit.UserScript (ExtensionScript.source (extension, ExtensionContext.BACKGROUND, messages_json (extension)),
                 WebKit.UserContentInjectedFrames.TOP_FRAME, WebKit.UserScriptInjectionTime.START, own_pages, null));
-            return (WebKit.WebView) Object.new (typeof (WebKit.WebView),
+            created = (WebKit.WebView) Object.new (typeof (WebKit.WebView),
                 "network-session", profile.session,
                 "web-context", profile.context,
                 "user-content-manager", content,
                 "settings", profile.web_settings);
+            return created;
         }
 
         private string background_page (Extension extension) {
@@ -303,7 +320,7 @@ namespace Singularity.Apps.Browser {
             return mime ?? "application/octet-stream";
         }
 
-        private async void handle_message (Extension extension, BrowserTab? tab, string? origin, JSC.Value value, WebKit.ScriptMessageReply reply) {
+        private async void handle_message (Extension extension, BrowserTab? tab, string? origin, WebKit.WebView? source, JSC.Value value, WebKit.ScriptMessageReply reply) {
             string kind = origin ?? (tab != null ? "content" : "page");
             Json.Object request;
             try {
@@ -315,17 +332,23 @@ namespace Singularity.Apps.Browser {
                 return;
             }
             string op = request.get_string_member_with_default ("op", "");
+            if (origin == null) kind = request.get_string_member_with_default ("kind", kind) == "content" ? "content" : "page";
+            var endpoint = new Endpoint ();
+            endpoint.view = source;
+            endpoint.world = kind == "content" ? ExtensionScript.world_for (extension.id) : null;
             var args = request.has_member ("args") ? request.get_member ("args") : new Json.Node (Json.NodeType.NULL);
             var argo = args.get_node_type () == Json.NodeType.OBJECT ? args.get_object () : new Json.Object ();
             try {
-                string? result = yield dispatch (extension, tab, kind, op, args, argo);
+                string? source_uri = source != null ? source.get_uri () : null;
+                string? result = op.has_prefix ("port.") ? yield port_message (extension, tab, kind, endpoint, op, argo, source_uri)
+                    : yield dispatch (extension, tab, kind, op, args, argo, source_uri);
                 reply.return_value (new JSC.Value.string (value.get_context (), result ?? ""));
             } catch (Error e) {
                 reply.return_error_message (e.message);
             }
         }
 
-        private async string? dispatch (Extension extension, BrowserTab? tab, string kind, string op, Json.Node args, Json.Object argo) throws Error {
+        private async string? dispatch (Extension extension, BrowserTab? tab, string kind, string op, Json.Node args, Json.Object argo, string? source_uri) throws Error {
             switch (op) {
                 case "storage.get":
                     return storage_get (extension, argo.get_string_member_with_default ("area", "local"), argo.get_member ("keys"));
@@ -342,7 +365,7 @@ namespace Singularity.Apps.Browser {
                     return Json.to_string (int_node (Json.to_string (object_node (storage_for (extension, argo.get_string_member_with_default ("area", "local"))), false).length), false);
                 case "runtime.sendMessage":
                     string message = node_json (argo.get_member ("message"));
-                    string sender = sender_json (extension, tab, kind);
+                    string sender = sender_json (extension, tab, kind, source_uri);
                     if (kind == "background") return null;
                     return yield dispatch_background (extension.id, "message", message, sender);
                 case "runtime.openOptionsPage":
@@ -386,7 +409,7 @@ namespace Singularity.Apps.Browser {
                     var receiver = tab_from (argo.get_member ("tabId"));
                     if (receiver == null || receiver.view == null) throw new IOError.NOT_FOUND ("Could not establish connection. Receiving end does not exist.");
                     return yield call_view (receiver.view, ExtensionScript.world_for (extension.id), "message",
-                        node_json (argo.get_member ("message")), sender_json (extension, null, kind));
+                        node_json (argo.get_member ("message")), sender_json (extension, null, kind, source_uri));
                 case "scripting.executeScript":
                     return yield execute_script (extension, argo);
                 case "scripting.insertCSS":
@@ -472,6 +495,29 @@ namespace Singularity.Apps.Browser {
                     perms.end_array ();
                     perms.end_object ();
                     return Json.to_string (perms.get_root (), false);
+                case "fontSettings.getFontList":
+                    var fonts = new Json.Array ();
+                    var map = Pango.CairoFontMap.get_default ();
+                    Pango.FontFamily[] families;
+                    map.list_families (out families);
+                    string[] names = {};
+                    foreach (var family in families) names += family.get_name ();
+                    qsort_with_data<string> (names, sizeof (string), (a, b) => strcmp (a, b));
+                    foreach (string name in names) {
+                        var font = new Json.Object ();
+                        font.set_string_member ("fontId", name);
+                        font.set_string_member ("displayName", name);
+                        fonts.add_object_element (font);
+                    }
+                    var fonts_node = new Json.Node (Json.NodeType.ARRAY);
+                    fonts_node.set_array (fonts);
+                    return Json.to_string (fonts_node, false);
+                case "tabs.capture":
+                    var shot_tab = active_tab;
+                    if (shot_tab == null || shot_tab.view == null) throw new IOError.NOT_FOUND ("No tab to capture");
+                    var texture = yield shot_tab.view.get_snapshot (WebKit.SnapshotRegion.VISIBLE, WebKit.SnapshotOptions.NONE, null);
+                    var png = texture.save_to_png_bytes ();
+                    return Json.to_string (string_node ("data:image/png;base64," + Base64.encode (png.get_data ())), false);
                 case "dnr.enabled":
                 case "dnr.dynamic":
                     return "[]";
@@ -503,6 +549,59 @@ namespace Singularity.Apps.Browser {
             if (list == null) return;
             waiting.unset (id);
             foreach (var waiter in list) Idle.add ((owned) waiter.resume);
+        }
+
+        private async string? port_message (Extension extension, BrowserTab? tab, string kind, Endpoint endpoint, string op, Json.Object argo, string? source_uri) throws Error {
+            string port_id = argo.get_string_member_with_default ("portId", "");
+            if (!port_id.has_prefix (extension.id + ":")) throw new IOError.INVALID_ARGUMENT ("Invalid port");
+            switch (op) {
+                case "port.open":
+                    var channel = new Channel ();
+                    channel.extension = extension.id;
+                    channel.opener = endpoint;
+                    channel.target = new Endpoint ();
+                    var target_tab = argo.has_member ("tabId") && argo.get_member ("tabId").get_node_type () == Json.NodeType.VALUE
+                        ? tab_from (argo.get_member ("tabId")) : null;
+                    if (target_tab != null) {
+                        channel.target.view = target_tab.view;
+                        channel.target.world = ExtensionScript.world_for (extension.id);
+                    } else {
+                        if (!backgrounds.has_key (extension.id)) sync_backgrounds ();
+                        if (!ready.contains (extension.id)) yield dispatch_background (extension.id, "ping", "null", null);
+                        channel.target.view = backgrounds[extension.id];
+                    }
+                    if (channel.target.view == null) throw new IOError.NOT_FOUND ("Could not establish connection. Receiving end does not exist.");
+                    channels[port_id] = channel;
+                    var data = new Json.Object ();
+                    data.set_string_member ("portId", port_id);
+                    data.set_string_member ("name", argo.get_string_member_with_default ("name", ""));
+                    yield call_view (channel.target.view, channel.target.world, "connect", Json.to_string (object_node (data), false),
+                        sender_json (extension, tab, kind, source_uri));
+                    return null;
+                case "port.post":
+                    var channel = channels[port_id];
+                    if (channel == null) return null;
+                    var other = same (channel.opener, endpoint) ? channel.target : channel.opener;
+                    if (other.view == null) return null;
+                    var data = new Json.Object ();
+                    data.set_string_member ("portId", port_id);
+                    data.set_member ("message", argo.has_member ("message") ? argo.get_member ("message").copy () : new Json.Node (Json.NodeType.NULL));
+                    call_view.begin (other.view, other.world, "portMessage", Json.to_string (object_node (data), false), "{}");
+                    return null;
+                case "port.close":
+                    var channel = channels[port_id];
+                    if (channel == null) return null;
+                    channels.unset (port_id);
+                    var other = same (channel.opener, endpoint) ? channel.target : channel.opener;
+                    if (other.view != null) call_view.begin (other.view, other.world, "portClose", "{\"portId\":%s}".printf (Json.to_string (string_node (port_id), false)), "{}");
+                    return null;
+                default:
+                    throw new IOError.NOT_SUPPORTED ("%s is not supported".printf (op));
+            }
+        }
+
+        private static bool same (Endpoint a, Endpoint b) {
+            return a.view == b.view && a.world == b.world;
         }
 
         public async string? dispatch_background (string id, string type, string payload, string? sender) {
@@ -787,7 +886,7 @@ namespace Singularity.Apps.Browser {
             return object_node (object);
         }
 
-        private string sender_json (Extension extension, BrowserTab? tab, string kind) {
+        private string sender_json (Extension extension, BrowserTab? tab, string kind, string? source_uri = null) {
             var sender = new Json.Object ();
             sender.set_string_member ("id", extension.id);
             if (tab != null && tab_ids.has_key (tab)) {
@@ -796,7 +895,9 @@ namespace Singularity.Apps.Browser {
                 sender.set_string_member ("origin", Address.origin_of (tab.uri));
                 sender.set_int_member ("frameId", 0);
             } else {
-                sender.set_string_member ("url", page_url (extension, kind == "background" ? BACKGROUND_PAGE : "/"));
+                string own = "%s://%s/".printf (SCHEME, extension.id);
+                sender.set_string_member ("url", source_uri != null && source_uri.has_prefix (own) ? source_uri
+                    : page_url (extension, kind == "background" ? BACKGROUND_PAGE : "/"));
                 sender.set_string_member ("origin", "%s://%s".printf (SCHEME, extension.id));
             }
             return Json.to_string (object_node (sender), false);
