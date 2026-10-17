@@ -77,6 +77,12 @@ executable('singularity-browser',
     'src/vault_bridge.vala',
     'src/vault_enrollment.vala',
     'src/vault_transport.vala',
+    'src/extension_crypto.vapi',
+    'src/extension_crypto.c',
+    'src/crx.vala',
+    'src/zip_archive.vala',
+    'src/extension.vala',
+    'src/extension_manager.vala',
     'src/downloads.vala',
     'src/pages.vala',
     'src/devtools.vala',
@@ -139,6 +145,19 @@ cable_test = executable('cable-test',
   include_directories: include_directories('src'),
 )
 test('cable', cable_test, env: ['CABLE_RESPONDER=' + meson.current_source_dir() / 'tests' / 'cable_responder.py'])
+
+extension_test = executable('extension-test',
+  files('src/extension_crypto.vapi', 'src/extension_crypto.c', 'src/crx.vala', 'src/zip_archive.vala', 'src/extension.vala', 'src/extension_manager.vala', 'tests/extension_test.vala'),
+  dependencies: [gtk_dep, gee_dep, json_dep, soup_dep, gnutls_dep],
+  include_directories: include_directories('src'),
+)
+test('extensions', extension_test, env: ['TMPDIR=' + meson.current_build_dir(), 'BROWSER_FIXTURES=' + meson.current_source_dir() / 'tests' / 'fixtures'])
+
+extension_store_check = executable('extension-store-check',
+  files('src/extension_crypto.vapi', 'src/extension_crypto.c', 'src/crx.vala', 'src/zip_archive.vala', 'src/extension.vala', 'src/extension_manager.vala', 'tests/extension_store_check.vala'),
+  dependencies: [gtk_dep, gee_dep, json_dep, soup_dep, gnutls_dep],
+  include_directories: include_directories('src'),
+)
 
 password_import_test = executable('password-import-test',
   core + files('src/passwords.vala', 'tests/password_import_test.vala'),

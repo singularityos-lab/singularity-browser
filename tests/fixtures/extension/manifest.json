@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "__MSG_name__",
+  "description": "__MSG_description__",
+  "version": "1.2.0",
+  "default_locale": "en",
+  "permissions": ["storage", "tabs"],
+  "host_permissions": ["https://example.org/*"],
+  "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "Sample", "default_icon": { "16": "icon16.png", "48": "icon48.png" } },
+  "icons": { "128": "icon128.png" },
+  "content_scripts": [
+    { "matches": ["https://example.org/*"], "js": ["content.js"], "css": ["content.css"], "run_at": "document_end" }
+  ]
+}
