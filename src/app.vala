@@ -67,6 +67,10 @@ namespace Singularity.Apps.Browser {
 
             services = new Services (settings, webapp != null ? "webapp-" + webapp.id.substring (WebApps.PREFIX.length) : "default");
             services.blocker.start.begin ();
+            services.extensions.open_url.connect ((url) => {
+                var win = get_active_window () as BrowserWindow ?? main_window ();
+                if (win != null) win.open (url, TabOpen.FOREGROUND);
+            });
             services.closed_changed.connect (queue_save);
             build_menu ();
             install_actions ();

@@ -633,6 +633,7 @@ namespace Singularity.Apps.Browser {
         private void on_current_changed () {
             var tab = current_tab ();
             if (tab == null) return;
+            if (!is_private) services.extensions.tab_activated (tab);
             url.show_tab (tab);
             sync_bubbles ();
             string window_title = webapp != null ? webapp.name : tab.display_title;

@@ -191,6 +191,7 @@ namespace Singularity.Apps.Browser {
             view.hexpand = true;
             view.vexpand = true;
             apply_blocker ();
+            if (!profile.ephemeral) services.extensions.attach (this, content_manager);
 
             view.notify["uri"].connect (() => {
                 string? u = view.get_uri ();
@@ -443,6 +444,7 @@ namespace Singularity.Apps.Browser {
                 case WebKit.LoadEvent.FINISHED:
                     string? u = view.get_uri ();
                     if (u != null) profile.record_visit (u, view.get_title () ?? "");
+                    if (!profile.ephemeral) services.extensions.tab_updated (this);
                     schedule_reader_probe ();
                     auto_fill.begin (password_revision);
                     break;

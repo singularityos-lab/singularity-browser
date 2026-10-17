@@ -18,6 +18,8 @@ namespace Singularity.Apps.Browser {
         public ContentBlocker blocker { get; private set; }
         public Downloads downloads { get; private set; }
         public Profile main_profile { get; private set; }
+        public ExtensionManager extension_manager { get; private set; }
+        public ExtensionHost extensions { get; private set; }
         public Gee.ArrayList<ClosedTab> closed = new Gee.ArrayList<ClosedTab> ();
 
         private Profile? _private_profile = null;
@@ -34,6 +36,9 @@ namespace Singularity.Apps.Browser {
             downloads = new Downloads (store);
             main_profile = new Profile (profile_id, false, store, settings);
             downloads.watch (main_profile.session);
+            extension_manager = new ExtensionManager (Path.build_filename (dir, "extensions"));
+            extension_manager.user_agent = "Singularity-Browser/" + Config.VERSION;
+            extensions = new ExtensionHost (extension_manager, main_profile);
         }
 
         public Profile acquire_private () {
