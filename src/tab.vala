@@ -19,6 +19,7 @@ namespace Singularity.Apps.Browser {
         public string title { get; private set; default = ""; }
         public Gdk.Texture? favicon { get; private set; default = null; }
         public bool loading { get; private set; default = false; }
+        public bool auto_recover { get; set; default = false; }
         public double progress { get; private set; default = 0; }
         public bool can_go_back { get; private set; default = false; }
         public bool can_go_forward { get; private set; default = false; }
@@ -237,6 +238,9 @@ namespace Singularity.Apps.Browser {
             });
             view.load_changed.connect (on_load_changed);
             view.load_failed.connect (on_load_failed);
+            view.web_process_terminated.connect ((reason) => {
+                if (auto_recover) schedule_recover (uri, 3);
+            });
             view.load_failed_with_tls_errors.connect (on_tls_error);
             view.decide_policy.connect (on_decide_policy);
             view.create.connect (on_create);
@@ -464,6 +468,7 @@ namespace Singularity.Apps.Browser {
             if (error.matches (WebKit.NetworkError.quark (), WebKit.NetworkError.CANCELLED)) return true;
             if (error.matches (WebKit.PolicyError.quark (), WebKit.PolicyError.FRAME_LOAD_INTERRUPTED_BY_POLICY_CHANGE)) return true;
             uri = failing_uri;
+            if (auto_recover) schedule_recover (failing_uri, 10);
             string host = Address.display (failing_uri);
             string body;
             if (error.matches (WebKit.PolicyError.quark (), WebKit.PolicyError.CANNOT_SHOW_URI)) {
@@ -475,6 +480,14 @@ namespace Singularity.Apps.Browser {
             }
             show_error ("network-offline-symbolic", _("Can't Open This Page"), body, false);
             return true;
+        }
+
+        private void schedule_recover (string target, uint seconds) {
+            if (target == "") return;
+            Timeout.add_seconds (seconds, () => {
+                if (view != null) load (target);
+                return Source.REMOVE;
+            });
         }
 
         private bool on_tls_error (string failing_uri, GLib.TlsCertificate certificate, GLib.TlsCertificateFlags errors) {

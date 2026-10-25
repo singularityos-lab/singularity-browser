@@ -30,6 +30,7 @@ namespace Singularity.Apps.Browser {
         private uint sidebar_source = 0;
         private uint save_source = 0;
         private bool immersive = false;
+        public bool kiosk { get; private set; default = false; }
         private bool web_fullscreen = false;
         private bool vertical_tabs = false;
         private int group_counter = 0;
@@ -131,6 +132,10 @@ namespace Singularity.Apps.Browser {
             ((Widget) this).add_controller (keys);
 
             notify["fullscreened"].connect (() => {
+                if (!fullscreened && kiosk) {
+                    fullscreen ();
+                    return;
+                }
                 if (!fullscreened && immersive && !web_fullscreen) set_immersive (false);
             });
             close_request.connect (() => {
@@ -248,6 +253,7 @@ namespace Singularity.Apps.Browser {
                 if (tile != null && (tile.tabs.size > 1 || tiles.size > 1)) close_tab (tab);
                 else tab.load (Address.NEW_TAB);
             });
+            tab.auto_recover = kiosk;
             tab.fullscreen_changed.connect ((on) => {
                 web_fullscreen = on;
                 if (on) {
@@ -1427,8 +1433,15 @@ namespace Singularity.Apps.Browser {
             return row;
         }
 
+        public void enter_kiosk () {
+            kiosk = true;
+            foreach (var t in all_tabs ()) t.auto_recover = true;
+            set_immersive (true);
+            fullscreen ();
+        }
+
         public void set_immersive (bool on) {
-            if (immersive == on) return;
+            if (immersive == on || (kiosk && !on)) return;
             immersive = on;
             bubbles_hidden = on;
             page_root.margin_top = on || force_ssd || legacy_titlebar ? 0 : Singularity.Widgets.VIEW_EDGE_INSET_HEIGHT;
@@ -1437,7 +1450,7 @@ namespace Singularity.Apps.Browser {
             if (on && tab_sidebar != null) set_sidebar_visible (false);
             else if (!on && vertical_tabs) set_sidebar_visible (true);
             rebuild_layout ();
-            if (on && !web_fullscreen) {
+            if (on && !web_fullscreen && !kiosk) {
                 var toast = new Toast (_("Press Esc to leave reading mode"));
                 toast.timeout = 3;
                 add_toast (toast);
@@ -1445,6 +1458,7 @@ namespace Singularity.Apps.Browser {
         }
 
         public void toggle_fullscreen () {
+            if (kiosk) return;
             if (fullscreened) {
                 unfullscreen ();
                 set_immersive (false);
@@ -1456,7 +1470,7 @@ namespace Singularity.Apps.Browser {
 
         private bool on_key (uint keyval, uint keycode, Gdk.ModifierType state) {
             if (keyval == Gdk.Key.Escape) {
-                if (immersive && !web_fullscreen) {
+                if (immersive && !web_fullscreen && !kiosk) {
                     if (fullscreened) unfullscreen ();
                     set_immersive (false);
                     return true;

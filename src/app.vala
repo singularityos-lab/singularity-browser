@@ -119,11 +119,13 @@ namespace Singularity.Apps.Browser {
             string[] args = cmdline.get_arguments ();
             bool private_window = false;
             bool new_window = false;
+            bool kiosk = false;
             string[] uris = {};
             for (int i = 1; i < args.length; i++) {
                 string a = args[i];
                 if (a == "--private" || a == "--private-window") private_window = true;
                 else if (a == "--new-window") new_window = true;
+                else if (a == "--kiosk") kiosk = true;
                 else if (a == "--webapp") i++;
                 else if (a == "--gapplication-service") continue;
                 else if (a.has_prefix ("-")) continue;
@@ -132,6 +134,14 @@ namespace Singularity.Apps.Browser {
                     if (scheme == null || scheme.length == 1) uris += cmdline.create_file_for_arg (a).get_uri ();
                     else uris += a;
                 }
+            }
+            if (kiosk) {
+                var win = create_window (private_window);
+                if (uris.length == 0) win.start_blank ();
+                foreach (string u in uris) win.add_tab (u);
+                win.enter_kiosk ();
+                win.present ();
+                return 0;
             }
             if (private_window || new_window) {
                 var win = create_window (private_window);
@@ -329,7 +339,7 @@ namespace Singularity.Apps.Browser {
             builder.set_member_name ("windows");
             builder.begin_array ();
             foreach (var win in browser_windows ()) {
-                if (!win.is_private && win.webapp == null) win.write_session (builder);
+                if (!win.is_private && !win.kiosk && win.webapp == null) win.write_session (builder);
             }
             builder.end_array ();
             builder.end_object ();
