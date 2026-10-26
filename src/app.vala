@@ -16,10 +16,13 @@ namespace Singularity.Apps.Browser {
         private Store? readonly_store = null;
         private GLib.Menu? closed_section = null;
         private bool started = false;
+        private Automation? automation = null;
+        private bool automation_held = false;
 
         public BrowserApp (WebAppInfo? webapp) {
             Object (application_id: webapp != null ? webapp.id : APP_ID,
-                    flags: ApplicationFlags.HANDLES_OPEN | ApplicationFlags.HANDLES_COMMAND_LINE,
+                    flags: ApplicationFlags.HANDLES_OPEN | ApplicationFlags.HANDLES_COMMAND_LINE
+                           | (Automation.requested ? ApplicationFlags.NON_UNIQUE : 0),
                     webapp: webapp);
             Environment.set_prgname (webapp != null ? webapp.id : APP_ID);
             Environment.set_application_name (webapp != null ? webapp.name : _("Browser"));
@@ -65,7 +68,8 @@ namespace Singularity.Apps.Browser {
             StyleContext.add_provider_for_display (Gdk.Display.get_default (), provider, STYLE_PROVIDER_PRIORITY_USER + 1);
             IconTheme.get_for_display (Gdk.Display.get_default ()).add_resource_path ("/dev/sinty/browser/icons");
 
-            services = new Services (settings, webapp != null ? "webapp-" + webapp.id.substring (WebApps.PREFIX.length) : "default");
+            services = new Services (settings, webapp != null ? "webapp-" + webapp.id.substring (WebApps.PREFIX.length) : "default", Automation.requested);
+            if (Automation.requested) automation = new Automation (this, services.main_profile);
             services.blocker.start.begin ();
             services.extensions.open_url.connect ((url) => {
                 var win = get_active_window () as BrowserWindow ?? main_window ();
@@ -74,7 +78,7 @@ namespace Singularity.Apps.Browser {
             services.closed_changed.connect (queue_save);
             build_menu ();
             install_actions ();
-            if (webapp == null) {
+            if (webapp == null && !Automation.requested) {
                 services.store.history_changed.connect (queue_dock);
                 queue_dock ();
             }
@@ -86,11 +90,18 @@ namespace Singularity.Apps.Browser {
                 Source.remove (save_source);
                 save_source = 0;
             }
-            if (webapp == null) save_session ();
+            if (webapp == null && !Automation.requested) save_session ();
             base.shutdown ();
         }
 
         protected override void activate () {
+            if (Automation.requested) {
+                if (!automation_held) {
+                    automation_held = true;
+                    hold ();
+                }
+                return;
+            }
             var windows = browser_windows ();
             if (!windows.is_empty) {
                 windows[0].present ();
@@ -116,6 +127,10 @@ namespace Singularity.Apps.Browser {
         }
 
         protected override int command_line (ApplicationCommandLine cmdline) {
+            if (Automation.requested) {
+                activate ();
+                return 0;
+            }
             string[] args = cmdline.get_arguments ();
             bool private_window = false;
             bool new_window = false;

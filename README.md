@@ -21,6 +21,28 @@ meson compile -C build
 meson install -C build
 ```
 
+## Automation
+
+With the Fotone engine installed, `singularity-webdriver` is a W3C WebDriver server that starts
+Browser in its own automation session, so Selenium, WebdriverIO and other WebDriver clients can
+drive it:
+
+```sh
+singularity-webdriver --port=4444
+```
+
+`singularity-browser-mcp` serves the same session to agents as an MCP server on standard input
+and output. It starts its own driver, or uses an existing one with `--webdriver http://host:4444`.
+Over SSH the agent runs it on the remote machine:
+
+```sh
+ssh host singularity-browser-mcp
+```
+
+`--undetectable`, accepted by both, keeps `navigator.webdriver` false for pages that refuse
+automated sessions; the banner above the page still tells the person at the machine that Browser
+is being driven. Browser itself takes `--automation-hidden`.
+
 ## License
 
 GPL-3.0-only - see [LICENSE](LICENSE).

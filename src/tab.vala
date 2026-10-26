@@ -15,6 +15,7 @@ namespace Singularity.Apps.Browser {
         public string tab_id { get; construct; }
         public Services services { get; construct; }
         public Profile profile { get; construct; }
+        public bool automated { get; construct; }
         public string uri { get; private set; default = ""; }
         public string title { get; private set; default = ""; }
         public Gdk.Texture? favicon { get; private set; default = null; }
@@ -77,8 +78,8 @@ namespace Singularity.Apps.Browser {
         public signal void download_only ();
         public signal void extension_install (string id);
 
-        public BrowserTab (Services services, Profile profile, string? uri = null, WebKit.WebView? related = null) {
-            Object (tab_id: Uuid.string_random (), services: services, profile: profile,
+        public BrowserTab (Services services, Profile profile, string? uri = null, WebKit.WebView? related = null, bool automated = false) {
+            Object (tab_id: Uuid.string_random (), services: services, profile: profile, automated: automated,
                     orientation: Orientation.VERTICAL, spacing: 0);
             this.related = related;
             hexpand = true;
@@ -110,8 +111,10 @@ namespace Singularity.Apps.Browser {
             profile.site_changed.connect (on_site_changed);
             services.blocker.changed.connect (apply_blocker);
 
-            if (related != null) {
+            if (related != null || automated) {
                 ensure_view ();
+                if (automated)
+                    show_prompt ("automation", "system-run-symbolic", _("Browser is being controlled by automation"), null, null);
             } else if (uri != null && uri != "") {
                 pending_uri = uri;
             } else {
@@ -182,6 +185,13 @@ namespace Singularity.Apps.Browser {
                     "related-view", related,
                     "user-content-manager", content_manager,
                     "settings", profile.web_settings);
+            } else if (automated) {
+                view = (WebKit.WebView) Object.new (typeof (WebKit.WebView),
+                    "network-session", profile.session,
+                    "web-context", profile.context,
+                    "user-content-manager", content_manager,
+                    "settings", profile.web_settings,
+                    "is-controlled-by-automation", true);
             } else {
                 view = (WebKit.WebView) Object.new (typeof (WebKit.WebView),
                     "network-session", profile.session,

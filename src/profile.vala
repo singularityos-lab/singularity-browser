@@ -3,6 +3,7 @@ namespace Singularity.Apps.Browser {
     public class Profile : Object {
         public string id { get; construct; }
         public bool ephemeral { get; construct; }
+        public bool automation { get; construct; }
         public WebKit.NetworkSession session { get; private set; }
         public WebKit.WebContext context { get; private set; }
         public WebKit.Settings web_settings { get; private set; }
@@ -13,8 +14,8 @@ namespace Singularity.Apps.Browser {
 
         public signal void site_changed (string site, string key);
 
-        public Profile (string id, bool ephemeral, Store store, GLib.Settings settings) {
-            Object (id: id, ephemeral: ephemeral, store: store);
+        public Profile (string id, bool ephemeral, Store store, GLib.Settings settings, bool automation = false) {
+            Object (id: id, ephemeral: ephemeral || automation, store: store, automation: automation);
             string base_dir = Path.build_filename (Environment.get_user_data_dir (), "singularity", "browser");
             string cache_dir = Path.build_filename (Environment.get_user_cache_dir (), "singularity", "browser");
             if (id != "default") {
@@ -22,7 +23,11 @@ namespace Singularity.Apps.Browser {
                 cache_dir = Path.build_filename (cache_dir, "profiles", id);
             }
             data_dir = base_dir;
-            if (ephemeral) {
+            context = new WebKit.WebContext ();
+            if (automation) {
+                context.set_automation_allowed (true);
+                session = context.get_network_session_for_automation () ?? new WebKit.NetworkSession.ephemeral ();
+            } else if (ephemeral) {
                 session = new WebKit.NetworkSession.ephemeral ();
             } else {
                 DirUtils.create_with_parents (base_dir, 0700);
@@ -37,7 +42,6 @@ namespace Singularity.Apps.Browser {
             session.get_website_data_manager ().set_favicons_enabled (true);
             session.set_itp_enabled (true);
 
-            context = new WebKit.WebContext ();
             context.set_cache_model (WebKit.CacheModel.WEB_BROWSER);
             context.set_spell_checking_enabled (true);
             context.initialize_notification_permissions.connect (() => {

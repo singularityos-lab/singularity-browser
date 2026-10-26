@@ -1,0 +1,26 @@
+#!/bin/sh
+dir=$(dirname "$(readlink -f "$0")")
+export FOTONE_WEBDRIVER_BROWSER="${FOTONE_WEBDRIVER_BROWSER:-$dir/singularity-browser}"
+driver=
+for candidate in /usr/local/bin/WPEWebDriver "$(command -v WPEWebDriver 2>/dev/null)"; do
+	if [ -n "$candidate" ] && [ -x "$candidate" ]; then
+		driver=$candidate
+		break
+	fi
+done
+if [ -z "$driver" ]; then
+	echo "singularity-webdriver: the Fotone engine is not installed" >&2
+	exit 1
+fi
+n=$#
+while [ "$n" -gt 0 ]; do
+	a=$1
+	shift
+	n=$((n - 1))
+	if [ "$a" = "--undetectable" ]; then
+		export FOTONE_AUTOMATION_HIDDEN=1
+	else
+		set -- "$@" "$a"
+	fi
+done
+exec "$driver" "$@"

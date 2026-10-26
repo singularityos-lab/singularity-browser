@@ -268,6 +268,15 @@ namespace Singularity.Apps.Browser {
             tab.extension_install.connect ((id) => install_extension.begin (id));
         }
 
+        public BrowserTab add_automation_tab () {
+            var target = focused_tile ?? ensure_first_tile ();
+            var tab = new BrowserTab (services, profile, null, null, true);
+            connect_tab (tab);
+            target.add_tab (tab, -1, true);
+            update_counts ();
+            return tab;
+        }
+
         public BrowserTab add_tab (string? uri, BrowserTile? tile = null, int position = -1, bool activate = true) {
             var target = tile ?? focused_tile ?? ensure_first_tile ();
             var tab = new BrowserTab (services, profile, uri);

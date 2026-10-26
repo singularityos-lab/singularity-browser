@@ -99,6 +99,7 @@ executable('singularity-browser',
     'src/search_provider.vala',
     'src/window.vala',
     'src/app.vala',
+    'src/automation.vala',
   ) + resources,
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, soup_dep, webkit_dep,
                  secret_dep, poppler_dep, math_dep, gio_unix_dep, libsingularity_dep, gnutls_dep, polkit_dep],
@@ -156,6 +157,14 @@ extension_test = executable('extension-test',
   include_directories: include_directories('src'),
 )
 test('extensions', extension_test, env: ['TMPDIR=' + meson.current_build_dir(), 'BROWSER_FIXTURES=' + meson.current_source_dir() / 'tests' / 'fixtures'])
+
+executable('singularity-browser-mcp',
+  files('src/mcp/webdriver.vala', 'src/mcp/browser_mcp.vala'),
+  dependencies: [gee_dep, json_dep, soup_dep, gio_unix_dep],
+  install: true,
+)
+
+install_data('data/singularity-webdriver', install_dir: get_option('bindir'), install_mode: 'rwxr-xr-x')
 
 extension_store_check = executable('extension-store-check',
   files('src/extension_crypto.vapi', 'src/extension_crypto.c', 'src/crx.vala', 'src/zip_archive.vala', 'src/extension.vala', 'src/extension_manager.vala', 'tests/extension_store_check.vala'),

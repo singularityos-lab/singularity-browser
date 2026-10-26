@@ -27,14 +27,14 @@ namespace Singularity.Apps.Browser {
 
         public signal void closed_changed ();
 
-        public Services (GLib.Settings settings, string profile_id = "default") {
+        public Services (GLib.Settings settings, string profile_id = "default", bool automation = false) {
             Object (settings: settings);
             string dir = Path.build_filename (Environment.get_user_data_dir (), "singularity", "browser");
             if (profile_id != "default") dir = Path.build_filename (dir, "profiles", profile_id);
             store = new Store (Path.build_filename (dir, "browser.db"));
             blocker = new ContentBlocker (settings);
             downloads = new Downloads (store);
-            main_profile = new Profile (profile_id, false, store, settings);
+            main_profile = new Profile (automation ? "automation" : profile_id, false, store, settings, automation);
             downloads.watch (main_profile.session);
             extension_manager = new ExtensionManager (Path.build_filename (dir, "extensions"));
             extension_manager.user_agent = "Singularity-Browser/" + Config.VERSION;

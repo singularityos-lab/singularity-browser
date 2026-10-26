@@ -26,9 +26,10 @@ namespace Singularity.Apps.Browser {
                 }
             }
         }
-        if (webapp == null) DevTools.prepare ();
+        Automation.parse (args);
+        if (webapp == null && !Automation.requested) DevTools.prepare ();
         var app = new BrowserApp (webapp);
-        if (webapp == null) new BrowserSearchProvider (app).export (app);
+        if (webapp == null && !Automation.requested) new BrowserSearchProvider (app).export (app);
         return app.run (args);
     }
 }
