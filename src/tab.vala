@@ -382,6 +382,18 @@ namespace Singularity.Apps.Browser {
             if (native_page != null) native_page.refresh ();
         }
 
+        [CCode (cname = "g_object_run_dispose")]
+        private static extern void run_dispose (Object object);
+
+        public void release () {
+            var page = view;
+            if (page == null) return;
+            Idle.add (() => {
+                run_dispose (page);
+                return Source.REMOVE;
+            });
+        }
+
         public void focus_page () {
             if (native_page != null && native_page.get_visible ()) native_page.focus_primary ();
             else if (view != null) view.grab_focus ();

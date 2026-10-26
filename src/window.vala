@@ -426,6 +426,7 @@ namespace Singularity.Apps.Browser {
             var chip = tile.chip_for (tab);
             if (tiles.size == 1 && tile.tabs.size == 1) {
                 close ();
+                tab.release ();
                 return;
             }
             if (closing.contains (tab)) return;
@@ -435,12 +436,14 @@ namespace Singularity.Apps.Browser {
                 Singularity.Motion.conceal (chip, Singularity.Motion.Preset.FADE).done.connect (() => {
                     closing.remove (tab);
                     if (tile.tabs.contains (tab)) tile.detach_tab (tab);
+                    tab.release ();
                     update_counts ();
                     queue_save ();
                 });
                 return;
             }
             tile.detach_tab (tab);
+            tab.release ();
             update_counts ();
             queue_save ();
         }
