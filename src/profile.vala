@@ -23,7 +23,7 @@ namespace Singularity.Apps.Browser {
                 cache_dir = Path.build_filename (cache_dir, "profiles", id);
             }
             data_dir = base_dir;
-            context = new WebKit.WebContext ();
+            context = (WebKit.WebContext) Object.new (typeof (WebKit.WebContext), "memory-pressure-settings", memory_pressure ());
             if (automation) {
                 context.set_automation_allowed (true);
                 session = context.get_network_session_for_automation () ?? new WebKit.NetworkSession.ephemeral ();
@@ -64,6 +64,30 @@ namespace Singularity.Apps.Browser {
             web_settings.enable_webaudio = true;
             web_settings.set_user_agent_with_application_details ("Singularity", Config.VERSION);
             settings.bind ("developer-tools", web_settings, "enable-developer-extras", SettingsBindFlags.GET);
+        }
+
+        public static uint memory_limit_mb (uint64 ram_kb) {
+            return (uint) (ram_kb / 2048).clamp (3072, 8192);
+        }
+
+        private static WebKit.MemoryPressureSettings memory_pressure () {
+            uint64 ram_kb = 0;
+            try {
+                string meminfo;
+                FileUtils.get_contents ("/proc/meminfo", out meminfo);
+                foreach (unowned string line in meminfo.split ("\n")) {
+                    if (line.has_prefix ("MemTotal:")) {
+                        ram_kb = uint64.parse (line.substring (9).strip ().split (" ")[0]);
+                        break;
+                    }
+                }
+            } catch (FileError e) {
+            }
+            var settings = new WebKit.MemoryPressureSettings ();
+            settings.set_memory_limit (memory_limit_mb (ram_kb));
+            settings.set_strict_threshold (0.75);
+            settings.set_conservative_threshold (0.5);
+            return settings;
         }
 
         public string? site_value (string site, string key) {
