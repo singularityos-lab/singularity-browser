@@ -62,6 +62,7 @@ namespace Singularity.Apps.Browser {
 
         protected override void startup () {
             base.startup ();
+            BrowserIntents.install (this);
             settings = load_settings ();
             var provider = new CssProvider ();
             provider.load_from_resource ("/dev/sinty/browser/browser.css");
