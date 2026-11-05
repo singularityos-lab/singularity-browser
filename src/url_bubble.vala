@@ -601,7 +601,7 @@ namespace Singularity.Apps.Browser {
             var row = new ActionRow (title, null, icon);
             string[] ids = binary ? new string[] { "allow", "block" } : new string[] { "ask", "allow", "block" };
             string[] labels = binary ? new string[] { _("Allow"), _("Block") } : new string[] { _("Ask"), _("Allow"), _("Block") };
-            var dropdown = new DropDown.from_strings (labels);
+            var dropdown = new ChoiceButton.from_strings (labels);
             dropdown.valign = Align.CENTER;
             string? current = profile.site_value (site, key);
             if (binary && current == null) current = tab.services.settings.get_boolean ("block-popups") ? "block" : "allow";
@@ -618,7 +618,7 @@ namespace Singularity.Apps.Browser {
         private Widget autoplay_row (string site) {
             var row = new ActionRow (_("Autoplay"), null, "media-playback-start-symbolic");
             string[] ids = { "allow", "allow-without-sound", "block" };
-            var dropdown = new DropDown.from_strings ({ _("Allow"), _("Without Sound"), _("Block") });
+            var dropdown = new ChoiceButton.from_strings ({ _("Allow"), _("Without Sound"), _("Block") });
             dropdown.valign = Align.CENTER;
             string current = profile.site_value (site, "autoplay") ?? tab.services.settings.get_string ("autoplay");
             for (int i = 0; i < ids.length; i++)

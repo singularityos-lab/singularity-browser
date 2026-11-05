@@ -802,7 +802,7 @@ namespace Singularity.Apps.Browser {
                 ids += f.id;
                 if (current != null && current.parent == f.id) selected = labels.length - 1;
             }
-            var folder = new DropDown.from_strings (labels);
+            var folder = new ChoiceButton.from_strings (labels);
             folder.selected = selected;
             box.append (folder);
             var buttons = new Box (Orientation.HORIZONTAL, 8);
