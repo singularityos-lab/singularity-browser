@@ -173,6 +173,11 @@ namespace Singularity.Apps.Browser {
                 content_manager.add_script (new WebKit.UserScript (WebAuthnScript.source (),
                     WebKit.UserContentInjectedFrames.TOP_FRAME, WebKit.UserScriptInjectionTime.START, null, null));
             }
+            content_manager.register_script_message_handler_with_reply (OneTimeCodeClient.HANDLER, OneTimeCodeClient.WORLD);
+            content_manager.script_message_with_reply_received[OneTimeCodeClient.HANDLER].connect (on_code_message);
+            content_manager.add_script (new WebKit.UserScript.for_world (OneTimeCodeClient.script (),
+                WebKit.UserContentInjectedFrames.ALL_FRAMES, WebKit.UserScriptInjectionTime.END,
+                OneTimeCodeClient.WORLD, null, null));
             if (services.settings.get_boolean ("save-passwords") && !profile.ephemeral) {
                 content_manager.register_script_message_handler (Passwords.HANDLER, Passwords.WORLD);
                 content_manager.script_message_received[Passwords.HANDLER].connect (on_password_message);
@@ -857,6 +862,67 @@ namespace Singularity.Apps.Browser {
                     profile.set_site_value (site, "passwords", "never");
                 });
             });
+        }
+
+        private Singularity.Widgets.ContextMenu? code_menu = null;
+
+        private bool on_code_message (JSC.Value value, WebKit.ScriptMessageReply reply) {
+            var context = value.get_context ();
+            if (view == null || code_menu != null || !value.is_object () || !value.object_get_property ("host").is_string ()) {
+                reply.return_value (new JSC.Value.null (context));
+                return true;
+            }
+            string host = value.object_get_property ("host").to_string ();
+            bool top = value.object_get_property ("top").to_boolean ();
+            double zoom = view.zoom_level;
+            Gdk.Rectangle rect = { view.get_width () / 2, 0, 1, 1 };
+            if (top) {
+                rect = {
+                    (int) (value.object_get_property ("x").to_double () * zoom),
+                    (int) (value.object_get_property ("y").to_double () * zoom),
+                    int.max (1, (int) (value.object_get_property ("width").to_double () * zoom)),
+                    int.max (1, (int) (value.object_get_property ("height").to_double () * zoom))
+                };
+            }
+            var client = OneTimeCodeClient.get_default ();
+            client.latest.begin ((o, r) => {
+                var code = client.latest.end (r);
+                if (code == null || view == null || code_menu != null) {
+                    reply.return_value (new JSC.Value.null (context));
+                    return;
+                }
+                bool fits = OneTimeCodeClient.domain_fits (host, code.domain);
+                string label;
+                if (!fits) label = _("Code %s from %s, meant for %s").printf (code.code, code.service, code.domain);
+                else if (code.service != "") label = _("Use Code %s from %s").printf (code.code, code.service);
+                else label = _("Use Code %s").printf (code.code);
+                bool answered = false;
+                var menu = new Singularity.Widgets.ContextMenu (view);
+                menu.add_item (label, fits ? "dialog-password-symbolic" : "dialog-warning-symbolic", () => {
+                    if (answered) return;
+                    answered = true;
+                    reply.return_value (new JSC.Value.string (context, code.code));
+                    client.notify_call ("Use", new Variant ("(u)", code.id));
+                });
+                menu.set_pointing_to (rect);
+                menu.position = Gtk.PositionType.BOTTOM;
+                menu.autohide = true;
+                menu.closed.connect (() => {
+                    Idle.add (() => {
+                        if (!answered) {
+                            answered = true;
+                            reply.return_value (new JSC.Value.null (context));
+                        }
+                        if (code_menu == menu) code_menu = null;
+                        menu.unparent ();
+                        return Source.REMOVE;
+                    });
+                });
+                code_menu = menu;
+                menu.popup ();
+                client.notify_call ("Present", null);
+            });
+            return true;
         }
 
         private Credential[] password_choices = {};
