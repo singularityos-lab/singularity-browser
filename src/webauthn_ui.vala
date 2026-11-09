@@ -193,12 +193,11 @@ namespace Singularity.Apps.Browser {
             });
             dialog.present ();
             int rc = 0;
-            new Thread<void> ("fido", () => {
+            Async.dispatch(this, Async.Qos.USER, (c) => {
                 rc = call ();
-                Idle.add (() => {
+                return () => {
                     with_touch.callback ();
-                    return Source.REMOVE;
-                });
+                };
             });
             yield;
             finished = true;
