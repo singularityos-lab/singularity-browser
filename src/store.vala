@@ -83,6 +83,7 @@ namespace Singularity.Apps.Browser {
             db.busy_timeout (2000);
             if (!this.read_only) {
                 exec ("PRAGMA journal_mode=WAL");
+                exec ("PRAGMA synchronous=NORMAL");
                 exec ("""CREATE TABLE IF NOT EXISTS history (
                     url TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT '', visits INTEGER NOT NULL DEFAULT 0,
                     last_visit INTEGER NOT NULL DEFAULT 0)""");
