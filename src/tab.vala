@@ -640,6 +640,9 @@ namespace Singularity.Apps.Browser {
                 key = "notifications";
                 message = _("%s wants to show notifications.");
                 icon = "preferences-system-notifications-symbolic";
+            } else if (request.get_type ().name () == "WebKitMediaKeySystemPermissionRequest") {
+                request.allow ();
+                return true;
             } else {
                 request.deny ();
                 return true;
