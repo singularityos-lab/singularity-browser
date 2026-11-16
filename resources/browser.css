@@ -78,6 +78,9 @@ progressbar.browser-url-progress > trough > progress {
 .browser-root {
     background-color: @window_bg_color;
 }
+.browser-root.immersive {
+    border-top: none;
+}
 .browser-tiles.tiled {
     padding: 4px;
 }
