@@ -19,7 +19,6 @@ secret_dep  = dependency('libsecret-1')
 gnutls_dep  = dependency('gnutls')
 polkit_dep  = dependency('polkit-gobject-1')
 fido_dep    = dependency('libfido2')
-fido_lib    = static_library('browser-fido', 'src/fido_device.c', dependencies: [dependency('glib-2.0'), fido_dep])
 poppler_dep = dependency('poppler-glib')
 math_dep    = meson.get_compiler('c').find_library('m', required: true)
 gio_unix_dep = dependency('gio-unix-2.0')
@@ -32,6 +31,8 @@ if not meson.is_subproject() and libsingularity_dep.type_name() == 'internal'
   libsingularity_vapi_dir = join_paths(meson.project_build_root(), 'subprojects', 'libsingularity')
   add_project_arguments(['--vapidir=' + libsingularity_vapi_dir], language: 'vala')
 endif
+
+fido_lib    = static_library('browser-fido', 'src/fido_device.c', dependencies: [dependency('glib-2.0'), fido_dep])
 
 app_id = 'dev.sinty.browser'
 

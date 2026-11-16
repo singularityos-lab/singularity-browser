@@ -8,6 +8,7 @@ namespace Singularity.Apps.Browser {
         public string name;
         public string url;
         public string scope;
+        public string? form_factors = null;
 
         public WebAppInfo (string id, string name, string url) {
             this.id = id;
@@ -49,6 +50,7 @@ namespace Singularity.Apps.Browser {
                 file.load_from_file (Path.build_filename (root_dir (), id, "app.ini"), KeyFileFlags.NONE);
                 var info = new WebAppInfo (id, file.get_string ("Web App", "Name"), file.get_string ("Web App", "Url"));
                 if (file.has_key ("Web App", "Scope")) info.scope = file.get_string ("Web App", "Scope");
+                if (file.has_key ("Web App", "FormFactors")) info.form_factors = file.get_string ("Web App", "FormFactors");
                 return info;
             } catch (Error e) {
                 return null;
@@ -61,6 +63,7 @@ namespace Singularity.Apps.Browser {
             file.set_string ("Web App", "Name", name);
             file.set_string ("Web App", "Url", url);
             file.set_string ("Web App", "Scope", scope);
+            if (form_factors != null) file.set_string ("Web App", "FormFactors", form_factors);
             file.save_to_file (Path.build_filename (dir (), "app.ini"));
             string exe = Environment.find_program_in_path ("singularity-browser") ?? FileUtils.read_link ("/proc/self/exe");
             var desktop = new KeyFile ();
@@ -75,6 +78,7 @@ namespace Singularity.Apps.Browser {
             desktop.set_boolean ("Desktop Entry", "Terminal", false);
             desktop.set_boolean ("Desktop Entry", "StartupNotify", true);
             desktop.set_string ("Desktop Entry", "X-Singularity-WebApp", id);
+            if (form_factors != null) desktop.set_string ("Desktop Entry", "X-Sinty-FormFactors", form_factors);
             DirUtils.create_with_parents (Path.get_dirname (desktop_path ()), 0755);
             desktop.save_to_file (desktop_path ());
         }
@@ -145,6 +149,58 @@ namespace Singularity.Apps.Browser {
                     }
                 }
                 if (n->name.down () != "body") scan_links (n->children, ref best, ref best_size);
+            }
+        }
+
+        public static async void install_headless (string id, string url, string name, string? form_factors, string? icon_hint) throws Error {
+            if (!WebAppInfo.valid_id (id)) throw new IOError.INVALID_ARGUMENT ("invalid web app id");
+            var info = new WebAppInfo (id, name, url);
+            info.form_factors = form_factors;
+            DirUtils.create_with_parents (info.dir (), 0700);
+            string icon_name = "dev.sinty.browser";
+            var session = new Soup.Session ();
+            session.timeout = 15;
+            session.user_agent = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15";
+            string[] tries = {};
+            if (icon_hint != null && icon_hint.has_prefix ("https://")) tries += icon_hint;
+            try {
+                var page = new Soup.Message ("GET", url);
+                var body = yield Singularity.HttpBody.read (session, page, 4 * 1024 * 1024);
+                var copy = new uint8[body.get_size () + 1];
+                Memory.copy (copy, body.get_data (), body.get_size ());
+                string html = ((string) copy).make_valid ();
+                string base_uri = page.get_uri ().to_string ();
+                string? icon_url = best_icon_url (html, base_uri);
+                if (icon_url != null) tries += icon_url;
+                tries += Uri.resolve_relative (base_uri, "/apple-touch-icon.png", UriFlags.NONE);
+                tries += Uri.resolve_relative (base_uri, "/favicon.ico", UriFlags.NONE);
+            } catch (Error e) {
+            }
+            string png = Path.build_filename (info.dir (), "icon.png");
+            foreach (var candidate in tries) {
+                if (yield save_icon (session, candidate, png)) {
+                    icon_name = png;
+                    break;
+                }
+            }
+            info.save (icon_name);
+        }
+
+        private static async bool save_icon (Soup.Session session, string uri, string png) {
+            try {
+                var message = new Soup.Message ("GET", uri);
+                var bytes = yield Singularity.HttpBody.read (session, message, 8 * 1024 * 1024);
+                if (message.status_code != 200) return false;
+                Gdk.Texture? texture = null;
+                try {
+                    texture = Gdk.Texture.from_bytes (bytes);
+                } catch (Error e) {
+                    var pixbuf = new Gdk.Pixbuf.from_stream (new MemoryInputStream.from_bytes (bytes), null);
+                    texture = Gdk.Texture.for_pixbuf (pixbuf);
+                }
+                return texture != null && texture.get_width () >= 32 && texture.save_to_png (png);
+            } catch (Error e) {
+                return false;
             }
         }
 
