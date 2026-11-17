@@ -138,6 +138,7 @@ namespace Singularity.Apps.Browser {
             search.placeholder_text = _("Search or enter address");
             search.primary_icon_name = "system-search-symbolic";
             search.add_css_class ("browser-start-search");
+            search.add_css_class ("pill");
             search.hexpand = true;
             search.width_chars = 1;
             search.activate.connect (() => {

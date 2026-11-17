@@ -45,6 +45,7 @@ namespace Singularity.Apps.Browser {
             Object (application: app, services: services, is_private: is_private, webapp: webapp);
             profile = webapp != null ? services.main_profile : (is_private ? services.acquire_private () : services.main_profile);
             set_default_size (1180, 800);
+            Singularity.FormFactor.get_default ().changed.connect ((previous) => rebuild_layout ());
             set_title (webapp != null ? webapp.name : (is_private ? _("Private Browsing") : _("Browser")));
             add_css_class ("browser-window");
             if (is_private) add_css_class ("private");
@@ -601,8 +602,9 @@ namespace Singularity.Apps.Browser {
             while ((child = tiles_box.get_first_child ()) != null) tiles_box.remove (child);
             if (tree.root != null) tiles_box.append (build_node (tree.root));
             bool multi = tiles.size > 1;
+            bool tv = Singularity.FormFactor.current () == Singularity.FormFactorKind.TV;
             foreach (var tile in tiles.values) {
-                tile.configure (!vertical_tabs && !immersive && webapp == null, multi && !immersive);
+                tile.configure (!vertical_tabs && !immersive && !tv && webapp == null, multi && !immersive);
                 tile.mark_focused (multi && tile == focused_tile);
             }
             if (multi) tiles_box.add_css_class ("tiled");
