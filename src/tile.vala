@@ -356,6 +356,8 @@ namespace Singularity.Apps.Browser {
             else remove_css_class ("focused");
         }
 
+        public bool compact_chips = false;
+
         public void configure (bool chips_visible, bool header_visible) {
             show_chips = chips_visible;
             show_header = header_visible;
@@ -363,11 +365,12 @@ namespace Singularity.Apps.Browser {
         }
 
         private void update_header () {
-            header.visible = show_chips || show_header;
-            chips.visible = show_chips;
+            bool chips_on = show_chips || (compact_chips && tabs.size > 1);
+            header.visible = chips_on || show_header;
+            chips.visible = chips_on;
             add_button.visible = show_chips;
             grip.visible = show_header;
-            single_title.visible = !show_chips;
+            single_title.visible = !chips_on;
             if (active != null) single_title.label = active.display_title;
             int chars = fitting_chars (get_width ());
             if (get_width () > 0 && chars != label_chars) {

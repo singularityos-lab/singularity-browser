@@ -604,6 +604,7 @@ namespace Singularity.Apps.Browser {
             bool multi = tiles.size > 1;
             bool tv = Singularity.FormFactor.current () == Singularity.FormFactorKind.TV;
             foreach (var tile in tiles.values) {
+                tile.compact_chips = tv && !vertical_tabs && !immersive && webapp == null;
                 tile.configure (!vertical_tabs && !immersive && !tv && webapp == null, multi && !immersive);
                 tile.mark_focused (multi && tile == focused_tile);
             }
