@@ -45,7 +45,7 @@ namespace Singularity.Apps.Browser {
             Object (application: app, services: services, is_private: is_private, webapp: webapp);
             profile = webapp != null ? services.main_profile : (is_private ? services.acquire_private () : services.main_profile);
             set_default_size (1180, 800);
-            Singularity.FormFactor.get_default ().changed.connect ((previous) => rebuild_layout ());
+            form_factor_changed.connect ((previous) => rebuild_layout ());
             set_title (webapp != null ? webapp.name : (is_private ? _("Private Browsing") : _("Browser")));
             add_css_class ("browser-window");
             if (is_private) add_css_class ("private");
@@ -261,7 +261,7 @@ namespace Singularity.Apps.Browser {
                     set_immersive (true);
                     fullscreen ();
                 } else {
-                    unfullscreen ();
+                    leave_fullscreen ();
                     set_immersive (false);
                 }
             });
@@ -602,7 +602,7 @@ namespace Singularity.Apps.Browser {
             while ((child = tiles_box.get_first_child ()) != null) tiles_box.remove (child);
             if (tree.root != null) tiles_box.append (build_node (tree.root));
             bool multi = tiles.size > 1;
-            bool tv = Singularity.FormFactor.current () == Singularity.FormFactorKind.TV;
+            bool tv = form_factor == Singularity.FormFactorKind.TV && !form_factor_compat;
             foreach (var tile in tiles.values) {
                 tile.compact_chips = tv && !vertical_tabs && !immersive && webapp == null;
                 tile.configure (!vertical_tabs && !immersive && !tv && webapp == null, multi && !immersive);
@@ -1472,10 +1472,10 @@ namespace Singularity.Apps.Browser {
             }
         }
 
-        public void toggle_fullscreen () {
+        public override void toggle_fullscreen () {
             if (kiosk) return;
-            if (fullscreened) {
-                unfullscreen ();
+            if (fullscreen_locked ? immersive : fullscreened) {
+                leave_fullscreen ();
                 set_immersive (false);
             } else {
                 fullscreen ();
@@ -1486,7 +1486,7 @@ namespace Singularity.Apps.Browser {
         private bool on_key (uint keyval, uint keycode, Gdk.ModifierType state) {
             if (keyval == Gdk.Key.Escape) {
                 if (immersive && !web_fullscreen && !kiosk) {
-                    if (fullscreened) unfullscreen ();
+                    leave_fullscreen ();
                     set_immersive (false);
                     return true;
                 }
