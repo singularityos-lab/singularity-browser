@@ -71,7 +71,7 @@ namespace Singularity.Apps.Browser {
             desktop.set_string ("Desktop Entry", "Type", "Application");
             desktop.set_string ("Desktop Entry", "Name", name);
             desktop.set_string ("Desktop Entry", "Comment", _("Web app for %s").printf (scope));
-            desktop.set_string ("Desktop Entry", "Exec", "%s --webapp %s".printf (exec_quote (exe), id));
+            desktop.set_string ("Desktop Entry", "Exec", "%s --webapp %s %%u".printf (exec_quote (exe), id));
             desktop.set_string ("Desktop Entry", "Icon", icon);
             desktop.set_string ("Desktop Entry", "StartupWMClass", id);
             desktop.set_string ("Desktop Entry", "Categories", "Network;");
@@ -81,6 +81,18 @@ namespace Singularity.Apps.Browser {
             if (form_factors != null) desktop.set_string ("Desktop Entry", "X-Sinty-FormFactors", form_factors);
             DirUtils.create_with_parents (Path.get_dirname (desktop_path ()), 0755);
             desktop.save_to_file (desktop_path ());
+        }
+
+        public void accept_links () {
+            var desktop = new KeyFile ();
+            try {
+                desktop.load_from_file (desktop_path (), KeyFileFlags.KEEP_COMMENTS | KeyFileFlags.KEEP_TRANSLATIONS);
+                string exec = desktop.get_string ("Desktop Entry", "Exec");
+                if ("%u" in exec || "%U" in exec) return;
+                desktop.set_string ("Desktop Entry", "Exec", exec + " %u");
+                desktop.save_to_file (desktop_path ());
+            } catch (Error e) {
+            }
         }
 
         private static string exec_quote (string arg) {

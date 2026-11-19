@@ -166,6 +166,13 @@ namespace Singularity.Apps.Browser {
                 win.present ();
                 return 0;
             }
+            if (browser_windows ().is_empty && webapp != null && uris.length > 0 && webapp.in_scope (uris[0])) {
+                var win = new BrowserWindow (this, services, false, webapp);
+                win.add_tab (uris[0]);
+                win.present ();
+                for (int i = 1; i < uris.length; i++) open_uri_from_outside (uris[i]);
+                return 0;
+            }
             if (browser_windows ().is_empty) {
                 if (uris.length > 0 && webapp == null) {
                     if (!settings.get_boolean ("restore-session") || !restore_session ()) {

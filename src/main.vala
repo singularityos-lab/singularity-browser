@@ -47,6 +47,7 @@ namespace Singularity.Apps.Browser {
                     printerr ("Unknown web app: %s\n", args[i + 1]);
                     return 1;
                 }
+                webapp.accept_links ();
             }
         }
         Automation.parse (args);
