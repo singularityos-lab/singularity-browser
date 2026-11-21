@@ -49,7 +49,10 @@ namespace Singularity.Apps.Browser {
             set_title (webapp != null ? webapp.name : (is_private ? _("Private Browsing") : _("Browser")));
             add_css_class ("browser-window");
             if (is_private) add_css_class ("private");
-            if (webapp != null) add_css_class ("webapp");
+            if (webapp != null) {
+                add_css_class ("webapp");
+                if (get_class ().find_property ("tv-head-hidden") != null) set ("tv-head-hidden", true);
+            }
 
             back_bubble = add_bubble_icon ("go-previous-symbolic", _("Back"), () => current_tab_do ((t) => t.go_back ()));
             forward_bubble = add_bubble_icon ("go-next-symbolic", _("Forward"), () => current_tab_do ((t) => t.go_forward ()));
