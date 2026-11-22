@@ -288,12 +288,11 @@ namespace Singularity.Apps.Browser {
             var attributes = new HashTable<string, string> (str_hash, str_equal);
             attributes["scope"] = scope;
             attributes["profile"] = profile.id;
-            var items = yield Secret.password_searchv (schema (), attributes, Secret.SearchFlags.ALL, null);
+            var items = yield Keyring.search (schema (), attributes, Secret.SearchFlags.ALL);
             if (account_scope (account, profile) != scope) throw new IOError.PERMISSION_DENIED (_("The sync account changed during key lookup"));
             if (items.length () == 0) throw new IOError.NOT_FOUND (_("This profile has no saved sync keys"));
             if (items.length () != 1) throw new IOError.INVALID_DATA (_("This profile has ambiguous saved sync keys"));
-            var item = items.data as Secret.Item;
-            if (item == null) throw new IOError.INVALID_DATA (_("The keyring returned an invalid sync key item"));
+            var item = items.data;
             if (item.get_locked ()) {
                 if (!unlock) throw new IOError.PERMISSION_DENIED (_("The sync keys are locked"));
                 var service = yield Secret.Service.get (Secret.ServiceFlags.OPEN_SESSION, null);

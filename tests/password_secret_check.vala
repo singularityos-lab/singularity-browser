@@ -39,7 +39,7 @@ async void run_checks () {
             new Secret.Value ("Synthetic-legacy", -1, "text/plain"), Secret.ItemCreateFlags.NONE, null);
         var query = new HashTable<string, string> (str_hash, str_equal);
         query["url"] = origin;
-        var raw = yield Secret.password_searchv (Passwords.schema (), query, Secret.SearchFlags.ALL, null);
+        var raw = yield Keyring.search (Passwords.schema (), query, Secret.SearchFlags.ALL);
         print ("Raw Secret Service matches: %u\n", raw.length ());
         foreach (var item in raw) {
             var attributes = item.get_attributes ();

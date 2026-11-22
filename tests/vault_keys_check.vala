@@ -82,9 +82,9 @@ private async void check () throws Error {
     var attributes = new HashTable<string, string> (str_hash, str_equal);
     attributes["scope"] = keys.scope;
     attributes["profile"] = profile.id;
-    var items = yield Secret.password_searchv (schema, attributes, Secret.SearchFlags.ALL, null);
+    var items = yield Singularity.Apps.Browser.Keyring.search (schema, attributes, Secret.SearchFlags.ALL);
     assert (items.length () == 1);
-    var item = items.data as Secret.Item;
+    var item = items.data;
     var valid = yield item.retrieve_secret (null);
     assert (valid != null);
     foreach (string malformed in new string[] { "{\"format\":{}}", "{\"format\":1}", "{Synthetic-private-key" }) {

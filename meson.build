@@ -58,6 +58,7 @@ executable('singularity-browser',
     'src/services.vala',
     'src/profile.vala',
     'src/content_blocker.vala',
+    'src/keyring.vala',
     'src/passwords.vala',
     'src/passkey_crypto.vapi',
     'src/passkey_crypto.c',
@@ -131,24 +132,24 @@ test('filters-webkit', filter_check,
   timeout: 120)
 
 password_check = executable('password-webkit-check',
-  core + files('src/passwords.vala', 'tests/password_webkit_check.vala'),
+  core + files('src/keyring.vala', 'src/passwords.vala', 'tests/password_webkit_check.vala'),
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, webkit_dep, soup_dep, secret_dep, math_dep],
 )
 
 secret_check = executable('password-secret-check',
-  core + files('src/passwords.vala', 'tests/password_secret_check.vala'),
+  core + files('src/keyring.vala', 'src/passwords.vala', 'tests/password_secret_check.vala'),
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, secret_dep, math_dep],
 )
 
 webauthn_test = executable('webauthn-test',
-  core + files('src/passkey_crypto.vapi', 'src/passkey_crypto.c', 'src/webauthn.vala', 'tests/webauthn_test.vala'),
+  core + files('src/passkey_crypto.vapi', 'src/passkey_crypto.c', 'src/keyring.vala', 'src/webauthn.vala', 'tests/webauthn_test.vala'),
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, secret_dep, gnutls_dep, math_dep],
   include_directories: include_directories('src'),
 )
 test('webauthn', webauthn_test)
 
 cable_test = executable('cable-test',
-  core + files('src/passkey_crypto.vapi', 'src/passkey_crypto.c', 'src/cable_crypto.vapi', 'src/cable_crypto.c', 'src/webauthn.vala', 'src/cable.vala', 'tests/cable_test.vala'),
+  core + files('src/passkey_crypto.vapi', 'src/passkey_crypto.c', 'src/cable_crypto.vapi', 'src/cable_crypto.c', 'src/keyring.vala', 'src/webauthn.vala', 'src/cable.vala', 'tests/cable_test.vala'),
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, secret_dep, gnutls_dep, math_dep],
   include_directories: include_directories('src'),
 )
@@ -176,7 +177,7 @@ extension_store_check = executable('extension-store-check',
 )
 
 password_import_test = executable('password-import-test',
-  core + files('src/passwords.vala', 'tests/password_import_test.vala'),
+  core + files('src/keyring.vala', 'src/passwords.vala', 'tests/password_import_test.vala'),
   dependencies: [gtk_dep, gee_dep, json_dep, xml_dep, sqlite_dep, secret_dep, math_dep],
 )
 test('password-import', password_import_test)
@@ -194,25 +195,25 @@ vault_transport_check = executable('vault-transport-check',
 )
 
 vault_keys_check = executable('vault-keys-check',
-  core + files('src/profile.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'tests/vault_keys_check.vala'),
+  core + files('src/profile.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_transport.vala', 'src/keyring.vala', 'src/vault_keys.vala', 'tests/vault_keys_check.vala'),
   dependencies: [gtk_dep, gnutls_dep, gee_dep, json_dep, sqlite_dep, soup_dep, libsingularity_dep, secret_dep, webkit_dep, xml_dep, math_dep],
   include_directories: include_directories('src'),
 )
 
 vault_sync_check = executable('vault-sync-check',
-  core + files('src/profile.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'tests/vault_sync_check.vala'),
+  core + files('src/profile.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/keyring.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'tests/vault_sync_check.vala'),
   dependencies: [gtk_dep, gnutls_dep, gee_dep, json_dep, sqlite_dep, soup_dep, libsingularity_dep, secret_dep, webkit_dep, xml_dep, math_dep],
   include_directories: include_directories('src'),
 )
 
 vault_bridge_check = executable('vault-bridge-check',
-  core + files('src/profile.vala', 'src/passwords.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'src/vault_bridge.vala', 'tests/vault_bridge_check.vala'),
+  core + files('src/profile.vala', 'src/keyring.vala', 'src/passwords.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'src/vault_bridge.vala', 'tests/vault_bridge_check.vala'),
   dependencies: [gtk_dep, gnutls_dep, gee_dep, json_dep, sqlite_dep, soup_dep, libsingularity_dep, secret_dep, webkit_dep, xml_dep, math_dep],
   include_directories: include_directories('src'),
 )
 
 vault_enrollment_check = executable('vault-enrollment-check',
-  core + files('src/profile.vala', 'src/passwords.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'src/vault_bridge.vala', 'src/vault_enrollment.vala', 'tests/vault_enrollment_check.vala'),
+  core + files('src/profile.vala', 'src/keyring.vala', 'src/passwords.vala', 'src/vault_crypto.vapi', 'src/vault_crypto.c', 'src/vault_envelope.vala', 'src/vault_roster.vala', 'src/vault_ledger.vala', 'src/vault_dataset.vala', 'src/vault_transport.vala', 'src/vault_keys.vala', 'src/vault_sync.vala', 'src/vault_bridge.vala', 'src/vault_enrollment.vala', 'tests/vault_enrollment_check.vala'),
   dependencies: [gtk_dep, gnutls_dep, gee_dep, json_dep, sqlite_dep, soup_dep, libsingularity_dep, secret_dep, webkit_dep, xml_dep, math_dep],
   include_directories: include_directories('src'),
 )

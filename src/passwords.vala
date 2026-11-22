@@ -163,18 +163,17 @@ namespace Singularity.Apps.Browser {
                     var collection = yield default_collection (service);
                     if (collection == null) return result;
                 }
-                var items = yield Secret.password_searchv (schema (), attrs, Secret.SearchFlags.ALL, null);
+                var items = yield Keyring.search (schema (), attrs, Secret.SearchFlags.ALL);
                 foreach (var item in items) {
                     HashTable<string, string> attributes = item.get_attributes ();
                     if (!attributes.contains ("url") || Address.origin_of (attributes["url"]) != origin) continue;
                     string stored_profile = attributes.contains ("profile") ? attributes["profile"] : "default";
                     if (stored_profile != profile) continue;
-                    var proxy = item as Secret.Item;
-                    if (proxy != null && proxy.get_locked ()) {
+                    if (item.get_locked ()) {
                         if (!unlock) continue;
                         var service = yield Secret.Service.get (Secret.ServiceFlags.OPEN_SESSION, null);
                         var locked = new GLib.List<GLib.DBusProxy> ();
-                        locked.append (proxy);
+                        locked.append (item);
                         GLib.List<GLib.DBusProxy>? unlocked;
                         yield service.unlock (locked, null, out unlocked);
                     }

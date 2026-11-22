@@ -522,7 +522,7 @@ namespace Singularity.Apps.Browser {
             var result = new Gee.ArrayList<Passkey> ();
             var attrs = new HashTable<string, string> (str_hash, str_equal);
             attrs["rp"] = rp_id;
-            var items = yield Secret.password_searchv (schema (), attrs, Secret.SearchFlags.ALL | Secret.SearchFlags.UNLOCK, null);
+            var items = yield Keyring.search (schema (), attrs, Secret.SearchFlags.ALL | Secret.SearchFlags.UNLOCK);
             foreach (var item in items) {
                 var fields = item.get_attributes ();
                 if ((fields["profile"] ?? "default") != profile) continue;
@@ -554,7 +554,7 @@ namespace Singularity.Apps.Browser {
             if (ids.size == 0) return false;
             var attrs = new HashTable<string, string> (str_hash, str_equal);
             attrs["rp"] = rp_id;
-            var items = yield Secret.password_searchv (schema (), attrs, Secret.SearchFlags.ALL, null);
+            var items = yield Keyring.search (schema (), attrs, Secret.SearchFlags.ALL);
             foreach (var item in items) {
                 var fields = item.get_attributes ();
                 if ((fields["profile"] ?? "default") == profile && (fields["credential"] ?? "") in ids) return true;
