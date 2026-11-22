@@ -1,1 +1,3 @@
 option('devtools_frontend', type: 'string', value: '', description: 'Directory with the Chrome DevTools frontend built by scripts/devtools-frontend.sh')
+option('iride', type: 'feature', value: 'disabled',
+  description: 'Compile the Iride icon next to its SVG')

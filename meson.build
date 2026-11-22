@@ -269,6 +269,61 @@ install_data('data/icons/dev.sinty.browser.svg', 'data/icons/dev.sinty.browser-p
   install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
 )
 
+iride = find_program('iride', required: get_option('iride'))
+if iride.found()
+  custom_target('iride-icon-dev-sinty-browser',
+    input: 'data/icons/iride/dev.sinty.browser/iride.json',
+    output: 'dev.sinty.browser.iride',
+    depend_files: files(
+      'data/icons/iride/dev.sinty.browser/layers/000.svg',
+      'data/icons/iride/dev.sinty.browser/layers/001.svg',
+      'data/icons/iride/dev.sinty.browser/layers/002.svg',
+      'data/icons/iride/dev.sinty.browser/layers/003.svg',
+      'data/icons/iride/dev.sinty.browser/layers/004.svg',
+      'data/icons/iride/dev.sinty.browser/layers/005.svg',
+      'data/icons/iride/dev.sinty.browser/layers/006.svg',
+      'data/icons/iride/dev.sinty.browser/layers/007.svg',
+      'data/icons/iride/dev.sinty.browser/layers/008.svg',
+      'data/icons/iride/dev.sinty.browser/layers/009.svg',
+      'data/icons/iride/dev.sinty.browser/layers/010.svg',
+      'data/icons/iride/dev.sinty.browser/layers/011.svg',
+      'data/icons/iride/dev.sinty.browser/layers/012.svg',
+      'data/icons/iride/dev.sinty.browser/layers/013.svg',
+    ),
+    command: [iride, 'build', meson.current_source_dir() / 'data' / 'icons' / 'iride' / 'dev.sinty.browser', '@OUTPUT@'],
+    install: true,
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
+  )
+endif
+
+if iride.found()
+  custom_target('iride-icon-dev-sinty-browser-private',
+    input: 'data/icons/iride/dev.sinty.browser-private/iride.json',
+    output: 'dev.sinty.browser-private.iride',
+    depend_files: files(
+      'data/icons/iride/dev.sinty.browser-private/layers/000.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/001.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/002.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/003.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/004.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/005.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/006.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/007.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/008.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/009.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/010.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/011.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/012.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/013.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/014.svg',
+      'data/icons/iride/dev.sinty.browser-private/layers/015.svg',
+    ),
+    command: [iride, 'build', meson.current_source_dir() / 'data' / 'icons' / 'iride' / 'dev.sinty.browser-private', '@OUTPUT@'],
+    install: true,
+    install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'scalable' / 'apps'
+  )
+endif
+
 install_data('resources/icons/browser-private-symbolic.svg',
   rename: app_id + '-private-symbolic.svg',
   install_dir: get_option('datadir') / 'icons' / 'hicolor' / 'symbolic' / 'apps'

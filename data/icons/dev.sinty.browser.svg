@@ -1,34 +1,18 @@
-<svg width="236" height="236" viewBox="0 0 236 236" fill="none" xmlns="http://www.w3.org/2000/svg">
-<defs>
-<linearGradient id="br_globe" x1="0" y1="18" x2="0" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#78e1f1"/><stop offset="0.5" stop-color="#2e9fe6"/><stop offset="1" stop-color="#1f5ccb"/></linearGradient>
-<linearGradient id="br_side" x1="0" y1="120" x2="0" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1a4ca6"/><stop offset="1" stop-color="#112d6c"/></linearGradient>
-<linearGradient id="br_bar" x1="0" y1="138" x2="0" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff"/><stop offset="0.6" stop-color="#f0f4f9"/><stop offset="1" stop-color="#dae2ed"/></linearGradient>
-<linearGradient id="br_barside" x1="0" y1="160" x2="0" y2="186" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a0b1c7"/><stop offset="1" stop-color="#6c7f9a"/></linearGradient>
-<radialGradient id="br_bloom" cx="76" cy="46" r="132" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="white" stop-opacity="0.45"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
-<clipPath id="br_clip"><circle cx="118" cy="110" r="92"/></clipPath>
-<filter id="br_shadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#0a1f52" flood-opacity="0.42"/></filter>
-<filter id="br_barshadow" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0c2a66" flood-opacity="0.38"/></filter>
-</defs>
-<g filter="url(#br_shadow)">
-<circle cx="118" cy="118" r="92" fill="url(#br_side)"/>
-<circle cx="118" cy="110" r="92" fill="url(#br_globe)"/>
-</g>
-<g clip-path="url(#br_clip)">
-<g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none">
-<ellipse cx="118" cy="110" rx="40" ry="92"/>
-<path d="M118 18V202M26 110H210"/>
-<path d="M38 66Q118 84 198 66"/>
-<path d="M44 176Q118 190 192 176"/>
-</g>
-<rect width="236" height="236" fill="url(#br_bloom)"/>
-</g>
-<circle cx="118" cy="110" r="90" stroke="white" stroke-opacity="0.32" stroke-width="4"/>
-<g filter="url(#br_barshadow)">
-<rect x="30" y="146" width="176" height="40" rx="20" fill="url(#br_barside)"/>
-<rect x="30" y="138" width="176" height="40" rx="20" fill="url(#br_bar)"/>
-</g>
-<rect x="31.5" y="139.5" width="173" height="37" rx="18.5" stroke="white" stroke-width="3"/>
-<circle cx="56" cy="157" r="7.5" stroke="#2e9fe6" stroke-width="5"/>
-<path d="M61.5 162.5L67 168" stroke="#2e9fe6" stroke-width="5" stroke-linecap="round"/>
-<rect x="82" y="153" width="94" height="9" rx="4.5" fill="#b3c2d4"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="236" height="236" viewBox="0.000000 0.000000 236.000000 236.000000" preserveAspectRatio="none"><defs><filter id="shadow1" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="5" stdDeviation="6" flood-color="#0a1f52" flood-opacity="0.42"/></filter></defs><g filter="url(#shadow1)"><g fill="none"><defs><linearGradient id="l2-br_side" x1="0" y1="120" x2="0" y2="212" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1a4ca6" /><stop offset="1" stop-color="#112d6c" /></linearGradient>
+</defs><circle cx="118" cy="118" r="92" fill="url(#l2-br_side)" />
+</g><g fill="none"><defs><linearGradient id="l3-br_globe" x1="0" y1="18" x2="0" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#78e1f1" /><stop offset="0.5" stop-color="#2e9fe6" /><stop offset="1" stop-color="#1f5ccb" /></linearGradient>
+</defs><circle cx="118" cy="110" r="92" fill="url(#l3-br_globe)" />
+</g></g><defs><clipPath id="clip4"><path d="M26 110 A92 92 0 1 0 210 110 A92 92 0 1 0 26 110 Z" clip-rule="nonzero"/></clipPath></defs><g clip-path="url(#clip4)"><g fill="none"><g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none"><ellipse cx="118" cy="110" rx="40" ry="92" />
+</g></g><g fill="none"><g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none"><path d="M118 18V202M26 110H210" />
+</g></g><g fill="none"><g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none"><path d="M38 66Q118 84 198 66" />
+</g></g><g fill="none"><g stroke="white" stroke-opacity="0.5" stroke-width="6" fill="none"><path d="M44 176Q118 190 192 176" />
+</g></g><g fill="none"><defs><radialGradient id="l9-br_bloom" cx="76" cy="46" r="132" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="white" stop-opacity="0.45" /><stop offset="1" stop-color="white" stop-opacity="0" /></radialGradient>
+</defs><rect width="236" height="236" fill="url(#l9-br_bloom)" />
+</g></g><defs><clipPath id="rim10"><path d="M26 110A92 92 0 1 0 210 110A92 92 0 1 0 26 110Z" clip-rule="nonzero"/></clipPath><linearGradient id="rim10g0" x1="26" y1="18" x2="164" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.200"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.100"/></linearGradient><linearGradient id="rim10g1" x1="26" y1="18" x2="164" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.950"/><stop offset="0.45" stop-color="#ffffff" stop-opacity="0.600"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.250"/></linearGradient><linearGradient id="rim10g2" x1="26" y1="18" x2="164" y2="202" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.050"/><stop offset="0.7" stop-color="#ffffff" stop-opacity="0.150"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.420"/></linearGradient></defs><g clip-path="url(#rim10)"><path d="M26 110A92 92 0 1 0 210 110A92 92 0 1 0 26 110Z" fill="none" stroke="url(#rim10g0)" stroke-width="3"/><path d="M26 110A92 92 0 1 0 210 110A92 92 0 1 0 26 110ZM27.68 112.8 A92 92 0 1 0 211.68 112.8 A92 92 0 1 0 27.68 112.8 Z" fill="url(#rim10g1)" fill-rule="evenodd"/><path d="M26 110A92 92 0 1 0 210 110A92 92 0 1 0 26 110ZM25.04 108.4 A92 92 0 1 0 209.04 108.4 A92 92 0 1 0 25.04 108.4 Z" fill="url(#rim10g2)" fill-rule="evenodd"/></g><defs><filter id="shadow11" x="-20" y="-20" width="276" height="276" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#0c2a66" flood-opacity="0.38"/></filter></defs><g filter="url(#shadow11)"><g fill="none"><defs><linearGradient id="l12-br_barside" x1="0" y1="160" x2="0" y2="186" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#a0b1c7" /><stop offset="1" stop-color="#6c7f9a" /></linearGradient>
+</defs><rect x="30" y="146" width="176" height="40" rx="20" fill="url(#l12-br_barside)" />
+</g><g fill="none"><defs><linearGradient id="l13-br_bar" x1="0" y1="138" x2="0" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" /><stop offset="0.6" stop-color="#f0f4f9" /><stop offset="1" stop-color="#dae2ed" /></linearGradient>
+</defs><rect x="30" y="138" width="176" height="40" rx="20" fill="url(#l13-br_bar)" />
+</g></g><defs><clipPath id="rim14"><path d="M50 138H186A20 20 0 0 1 206 158V158A20 20 0 0 1 186 178H50A20 20 0 0 1 30 158V158A20 20 0 0 1 50 138Z" clip-rule="nonzero"/></clipPath><linearGradient id="rim14g0" x1="30" y1="138" x2="162" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.200"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.100"/></linearGradient><linearGradient id="rim14g1" x1="30" y1="138" x2="162" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.950"/><stop offset="0.45" stop-color="#ffffff" stop-opacity="0.600"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.250"/></linearGradient><linearGradient id="rim14g2" x1="30" y1="138" x2="162" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" stop-opacity="0.050"/><stop offset="0.7" stop-color="#ffffff" stop-opacity="0.150"/><stop offset="1" stop-color="#ffffff" stop-opacity="0.420"/></linearGradient></defs><g clip-path="url(#rim14)"><path d="M50 138H186A20 20 0 0 1 206 158V158A20 20 0 0 1 186 178H50A20 20 0 0 1 30 158V158A20 20 0 0 1 50 138Z" fill="none" stroke="url(#rim14g0)" stroke-width="3"/><path d="M50 138H186A20 20 0 0 1 206 158V158A20 20 0 0 1 186 178H50A20 20 0 0 1 30 158V158A20 20 0 0 1 50 138ZM51.68 140.8 H187.68 A20 20 0 0 1 207.68 160.8 V160.8 A20 20 0 0 1 187.68 180.8 H51.68 A20 20 0 0 1 31.68 160.8 V160.8 A20 20 0 0 1 51.68 140.8 Z" fill="url(#rim14g1)" fill-rule="evenodd"/><path d="M50 138H186A20 20 0 0 1 206 158V158A20 20 0 0 1 186 178H50A20 20 0 0 1 30 158V158A20 20 0 0 1 50 138ZM49.04 136.4 H185.04 A20 20 0 0 1 205.04 156.4 V156.4 A20 20 0 0 1 185.04 176.4 H49.04 A20 20 0 0 1 29.04 156.4 V156.4 A20 20 0 0 1 49.04 136.4 Z" fill="url(#rim14g2)" fill-rule="evenodd"/></g><g fill="none"><circle cx="56" cy="157" r="7.5" stroke="#2e9fe6" stroke-width="5" />
+</g><g fill="none"><path d="M61.5 162.5L67 168" stroke="#2e9fe6" stroke-width="5" stroke-linecap="round" />
+</g><g fill="none"><rect x="82" y="153" width="94" height="9" rx="4.5" fill="#b3c2d4" />
+</g></svg>

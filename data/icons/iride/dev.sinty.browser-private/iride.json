@@ -1,0 +1,365 @@
+{
+ "format": 1,
+ "canvas": [
+  236,
+  236
+ ],
+ "box": [
+  0,
+  0,
+  236,
+  236
+ ],
+ "stack": [
+  {
+   "shadow": {
+    "dx": 0,
+    "dy": 5,
+    "blur": 6,
+    "color": "#1a0d4c",
+    "opacity": 0.45,
+    "region": [
+     -20,
+     -20,
+     276,
+     276
+    ]
+   },
+   "stack": [
+    {
+     "layer": "layers/000.svg",
+     "piece": "globe"
+    },
+    {
+     "layer": "layers/001.svg",
+     "piece": "globe"
+    }
+   ]
+  },
+  {
+   "clip": "M26 110A92 92 0 1 0 210 110A92 92 0 1 0 26 110Z",
+   "stack": [
+    {
+     "layer": "layers/002.svg",
+     "piece": "meridian"
+    },
+    {
+     "layer": "layers/003.svg",
+     "piece": "network"
+    },
+    {
+     "layer": "layers/004.svg",
+     "piece": "network"
+    },
+    {
+     "layer": "layers/005.svg",
+     "piece": "network"
+    },
+    {
+     "layer": "layers/006.svg",
+     "piece": "network"
+    }
+   ]
+  },
+  {
+   "layer": "layers/007.svg",
+   "piece": "stars"
+  },
+  {
+   "layer": "layers/008.svg",
+   "piece": "stars"
+  },
+  {
+   "layer": "layers/009.svg",
+   "piece": "stars"
+  },
+  {
+   "layer": "layers/010.svg",
+   "piece": "glass"
+  },
+  {
+   "shadow": {
+    "dx": 0,
+    "dy": 4,
+    "blur": 4,
+    "color": "#1d1060",
+    "opacity": 0.4,
+    "region": [
+     -20,
+     -20,
+     276,
+     276
+    ]
+   },
+   "stack": [
+    {
+     "layer": "layers/011.svg",
+     "piece": "bar"
+    },
+    {
+     "layer": "layers/012.svg",
+     "piece": "bar"
+    }
+   ]
+  },
+  {
+   "layer": "layers/013.svg",
+   "piece": "bar"
+  },
+  {
+   "layer": "layers/014.svg",
+   "piece": "mask"
+  },
+  {
+   "layer": "layers/015.svg",
+   "piece": "address"
+  }
+ ],
+ "motion": [
+  {
+   "piece": "globe",
+   "origin": [
+    118.0,
+    118.0
+   ],
+   "tracks": [
+    {
+     "kind": "opacity",
+     "from": [
+      1
+     ],
+     "at": 756,
+     "duration": 75,
+     "ease": "linear"
+    }
+   ]
+  },
+  {
+   "piece": "meridian",
+   "origin": [
+    118.0,
+    110.0
+   ],
+   "tracks": [
+    {
+     "kind": "scale",
+     "from": [
+      1.92,
+      1
+     ],
+     "at": 0,
+     "duration": 160,
+     "ease": "linear"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      0.08,
+      1
+     ],
+     "at": 160,
+     "duration": 160,
+     "ease": "linear"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      1.7,
+      1
+     ],
+     "at": 320,
+     "duration": 160,
+     "ease": "linear"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      0.3,
+      1
+     ],
+     "at": 480,
+     "duration": 140,
+     "ease": "linear"
+    }
+   ]
+  },
+  {
+   "piece": "network",
+   "origin": [
+    118.0,
+    118.0
+   ],
+   "tracks": []
+  },
+  {
+   "piece": "stars",
+   "origin": [
+    118.0,
+    118.0
+   ],
+   "tracks": [
+    {
+     "kind": "opacity",
+     "from": [
+      1.85
+     ],
+     "at": 0,
+     "duration": 50,
+     "ease": "linear"
+    },
+    {
+     "kind": "opacity",
+     "from": [
+      0.15
+     ],
+     "at": 50,
+     "duration": 60,
+     "ease": "linear"
+    },
+    {
+     "kind": "opacity",
+     "from": [
+      1.85
+     ],
+     "at": 260,
+     "duration": 50,
+     "ease": "linear"
+    },
+    {
+     "kind": "opacity",
+     "from": [
+      0.15
+     ],
+     "at": 310,
+     "duration": 60,
+     "ease": "linear"
+    },
+    {
+     "kind": "opacity",
+     "from": [
+      1.85
+     ],
+     "at": 500,
+     "duration": 50,
+     "ease": "linear"
+    },
+    {
+     "kind": "opacity",
+     "from": [
+      0.15
+     ],
+     "at": 550,
+     "duration": 60,
+     "ease": "linear"
+    }
+   ]
+  },
+  {
+   "piece": "glass",
+   "origin": [
+    118.0,
+    118.0
+   ],
+   "tracks": []
+  },
+  {
+   "piece": "bar",
+   "origin": [
+    118.0,
+    158.0
+   ],
+   "tracks": [
+    {
+     "kind": "scale",
+     "from": [
+      0.15,
+      1
+     ],
+     "at": 0,
+     "duration": 300,
+     "ease": "out"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      1.05,
+      1
+     ],
+     "at": 300,
+     "duration": 100,
+     "ease": "linear"
+    }
+   ]
+  },
+  {
+   "piece": "mask",
+   "origin": [
+    57.5,
+    156.0
+   ],
+   "tracks": [
+    {
+     "kind": "scale",
+     "from": [
+      0.4,
+      0.4
+     ],
+     "at": 300,
+     "duration": 130,
+     "ease": "out"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      1.0,
+      2.35
+     ],
+     "at": 430,
+     "duration": 70,
+     "ease": "linear"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      1.0,
+      -0.35
+     ],
+     "at": 500,
+     "duration": 80,
+     "ease": "linear"
+    },
+    {
+     "kind": "scale",
+     "from": [
+      1.6,
+      1.6
+     ],
+     "at": 580,
+     "duration": 140,
+     "ease": "linear"
+    }
+   ]
+  },
+  {
+   "piece": "address",
+   "origin": [
+    118.0,
+    118.0
+   ],
+   "tracks": [
+    {
+     "kind": "reveal",
+     "from": [
+      0,
+      0,
+      84.0,
+      236
+     ],
+     "at": 260,
+     "duration": 496,
+     "ease": "linear"
+    }
+   ]
+  }
+ ]
+}

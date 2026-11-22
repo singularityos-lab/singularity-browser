@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="236" height="236" viewBox="0 0 236 236" fill="none"><defs><linearGradient id="bp_bar" x1="0" y1="138" x2="0" y2="178" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffffff" /><stop offset="0.6" stop-color="#f1f0fa" /><stop offset="1" stop-color="#dcd9ee" /></linearGradient>
+</defs><rect x="30" y="138" width="176" height="40" rx="20" fill="url(#bp_bar)" />
+</svg>
