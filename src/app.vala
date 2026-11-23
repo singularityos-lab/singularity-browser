@@ -136,12 +136,14 @@ namespace Singularity.Apps.Browser {
             bool private_window = false;
             bool new_window = false;
             bool kiosk = false;
+            bool native_scale = false;
             string[] uris = {};
             for (int i = 1; i < args.length; i++) {
                 string a = args[i];
                 if (a == "--private" || a == "--private-window") private_window = true;
                 else if (a == "--new-window") new_window = true;
                 else if (a == "--kiosk") kiosk = true;
+                else if (a == "--native-scale") native_scale = true;
                 else if (a == "--webapp") i++;
                 else if (a == "--gapplication-service") continue;
                 else if (a.has_prefix ("-")) continue;
@@ -155,6 +157,7 @@ namespace Singularity.Apps.Browser {
                 var win = create_window (private_window);
                 if (uris.length == 0) win.start_blank ();
                 foreach (string u in uris) win.add_tab (u);
+                win.tv_scale_disabled = native_scale;
                 win.enter_kiosk ();
                 win.present ();
                 return 0;

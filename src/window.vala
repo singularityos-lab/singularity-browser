@@ -1462,6 +1462,7 @@ namespace Singularity.Apps.Browser {
             if (immersive == on || (kiosk && !on)) return;
             immersive = on;
             bubbles_hidden = on;
+            tv_head_hidden = on;
             page_root.margin_top = on || force_ssd || legacy_titlebar ? 0 : Singularity.Widgets.VIEW_EDGE_INSET_HEIGHT;
             if (on) page_root.add_css_class ("immersive");
             else page_root.remove_css_class ("immersive");
