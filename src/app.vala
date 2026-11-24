@@ -3,7 +3,7 @@ using Singularity.Widgets;
 
 namespace Singularity.Apps.Browser {
 
-    public class BrowserApp : Singularity.Application, Singularity.Migration.Migratable {
+    public class BrowserApp : Singularity.Application, Singularity.Migration.Migratable, Singularity.Startup.Bootable {
         public const string APP_ID = "dev.sinty.browser";
 
         public GLib.Settings settings { get; private set; }
@@ -95,7 +95,41 @@ namespace Singularity.Apps.Browser {
             base.shutdown ();
         }
 
-        protected override void activate () {
+        public Singularity.Startup.Plan build_plan (Singularity.Startup.Request request) {
+            var plan = new Singularity.Startup.Plan ();
+            plan.version = "browser-1";
+            if (request.kind == Singularity.Startup.RequestKind.SERVICE) {
+                plan.main ("ready", Singularity.Startup.Category.PREPARE, (c) => {})
+                    .reaches (Singularity.Startup.Milestone.SHELL_READY)
+                    .reaches (Singularity.Startup.Milestone.CONTENT_READY)
+                    .reaches (Singularity.Startup.Milestone.INTERACTIVE);
+                return plan;
+            }
+            if (request.kind == Singularity.Startup.RequestKind.OPEN) {
+                var files = request.files ();
+                plan.main ("open-file", Singularity.Startup.Category.CONTENT, (c) => {
+                    open_files (files);
+                    c.window = get_active_window ();
+                }).reaches (Singularity.Startup.Milestone.SHELL_READY)
+                  .reaches (Singularity.Startup.Milestone.CONTENT_READY)
+                  .reaches (Singularity.Startup.Milestone.INTERACTIVE);
+                return plan;
+            }
+            plan.main ("window", Singularity.Startup.Category.SHELL, (c) => {
+                show_window ();
+                c.window = get_active_window ();
+            }).reaches (Singularity.Startup.Milestone.SHELL_READY)
+              .reaches (Singularity.Startup.Milestone.CONTENT_READY)
+              .reaches (Singularity.Startup.Milestone.INTERACTIVE);
+            return plan;
+        }
+
+        public void handle_request (Singularity.Startup.Request request) {
+            if (request.kind == Singularity.Startup.RequestKind.OPEN) open_files (request.files ());
+            else show_window ();
+        }
+
+        internal void show_window () {
             if (Automation.requested) {
                 if (!automation_held) {
                     automation_held = true;
@@ -123,7 +157,7 @@ namespace Singularity.Apps.Browser {
             }
         }
 
-        protected override void open (File[] files, string hint) {
+        private void open_files (File[] files) {
             foreach (var file in files) open_uri_from_outside (file.get_uri ());
         }
 
@@ -267,7 +301,7 @@ namespace Singularity.Apps.Browser {
             if (webapp != null) {
                 var win = browser_windows ().is_empty ? null : browser_windows ()[0];
                 if (win == null) {
-                    activate ();
+                    show_window ();
                     win = browser_windows ()[0];
                 }
                 if (webapp.in_scope (uri)) win.open (uri, TabOpen.FOREGROUND);

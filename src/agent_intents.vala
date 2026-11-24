@@ -110,7 +110,7 @@ function describe(e) {
         }
 
         private static BrowserWindow window (BrowserApp app) throws Error {
-            app.activate ();
+            app.show_window ();
             var w = app.get_active_window () as BrowserWindow;
             if (w == null) throw new IOError.NOT_FOUND ("the browser window is not open");
             return w;
