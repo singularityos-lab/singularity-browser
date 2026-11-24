@@ -3,7 +3,7 @@ using Singularity.Widgets;
 
 namespace Singularity.Apps.Browser {
 
-    public class BrowserApp : Singularity.Application {
+    public class BrowserApp : Singularity.Application, Singularity.Migration.Migratable {
         public const string APP_ID = "dev.sinty.browser";
 
         public GLib.Settings settings { get; private set; }
@@ -211,6 +211,29 @@ namespace Singularity.Apps.Browser {
         public BrowserWindow create_window (bool is_private) {
             var win = new BrowserWindow (this, services, is_private, webapp);
             win.session_changed.connect (queue_save);
+            return win;
+        }
+
+        public Variant save_model () {
+            return new VariantDict ().end ();
+        }
+
+        public async void restore_model (Variant model) throws Error {
+        }
+
+        public string window_kind (Gtk.Window w) {
+            return (w is BrowserWindow) ? "browser" : "";
+        }
+
+        public Variant save_window (Gtk.Window w) {
+            return ((BrowserWindow) w).save_migration ();
+        }
+
+        public async Gtk.Window? rebuild_window (string kind, Variant data) throws Error {
+            if (kind != "browser") return null;
+            var is_private = new VariantDict (data).lookup_value ("private", VariantType.BOOLEAN);
+            var win = create_window (is_private != null && is_private.get_boolean ());
+            if (!win.restore_migration (data)) win.start_blank ();
             return win;
         }
 

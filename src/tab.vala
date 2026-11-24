@@ -78,8 +78,8 @@ namespace Singularity.Apps.Browser {
         public signal void download_only ();
         public signal void extension_install (string id);
 
-        public BrowserTab (Services services, Profile profile, string? uri = null, WebKit.WebView? related = null, bool automated = false) {
-            Object (tab_id: Uuid.string_random (), services: services, profile: profile, automated: automated,
+        public BrowserTab (Services services, Profile profile, string? uri = null, WebKit.WebView? related = null, bool automated = false, string? id = null) {
+            Object (tab_id: id ?? Uuid.string_random (), services: services, profile: profile, automated: automated,
                     orientation: Orientation.VERTICAL, spacing: 0);
             this.related = related;
             hexpand = true;

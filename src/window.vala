@@ -1686,6 +1686,8 @@ namespace Singularity.Apps.Browser {
                 builder.begin_array ();
                 foreach (var tab in tile.tabs) {
                     builder.begin_object ();
+                    builder.set_member_name ("id");
+                    builder.add_string_value (tab.tab_id);
                     builder.set_member_name ("url");
                     builder.add_string_value (tab.session_uri () ?? "");
                     builder.set_member_name ("title");
@@ -1743,7 +1745,8 @@ namespace Singularity.Apps.Browser {
                     if (s == null) continue;
                     string u = s.get_string_member_with_default ("url", "");
                     if (u == "") continue;
-                    var tab = new BrowserTab (services, profile, null);
+                    string tid = s.get_string_member_with_default ("id", "");
+                    var tab = new BrowserTab (services, profile, null, null, false, tid != "" && find_tab (tid) == null ? tid : null);
                     tab.restore (u, s.get_string_member_with_default ("title", ""));
                     tab.pinned = s.get_boolean_member_with_default ("pinned", false);
                     string gid = s.get_string_member_with_default ("group", "");
@@ -1774,6 +1777,47 @@ namespace Singularity.Apps.Browser {
 
         public void start_blank () {
             add_tab (Address.NEW_TAB);
+        }
+
+        public Variant save_migration () {
+            var builder = new Json.Builder ();
+            write_session (builder);
+            var generator = new Json.Generator ();
+            generator.set_root (builder.get_root ());
+            var d = new VariantDict ();
+            d.insert_value ("private", new Variant.boolean (is_private));
+            d.insert_value ("immersive", new Variant.boolean (immersive && !kiosk));
+            d.insert_value ("session", new Variant.string (generator.to_data (null)));
+            string[] loaded = {};
+            foreach (var tile in tiles_in_order ())
+                foreach (var tab in tile.tabs)
+                    if (tab.materialized) loaded += tab.tab_id;
+            d.insert_value ("loaded", new Variant.strv (loaded));
+            return d.end ();
+        }
+
+        public bool restore_migration (Variant data) {
+            var d = new VariantDict (data);
+            var text = d.lookup_value ("session", VariantType.STRING);
+            if (text == null) return false;
+            var parser = new Json.Parser ();
+            try {
+                parser.load_from_data (text.get_string ());
+            } catch (Error e) {
+                return false;
+            }
+            var root = parser.get_root ();
+            if (root == null || root.get_node_type () != Json.NodeType.OBJECT || !restore_session (root.get_object ())) return false;
+            var loaded = d.lookup_value ("loaded", VariantType.STRING_ARRAY);
+            if (loaded != null) {
+                foreach (string id in loaded.get_strv ()) {
+                    var tab = find_tab (id);
+                    if (tab != null) tab.materialize ();
+                }
+            }
+            var reading = d.lookup_value ("immersive", VariantType.BOOLEAN);
+            if (reading != null && reading.get_boolean ()) set_immersive (true);
+            return true;
         }
     }
 }
